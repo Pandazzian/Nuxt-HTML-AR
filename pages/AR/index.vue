@@ -3,7 +3,7 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-8">
-                    <QrScannerExperimental></QrScannerExperimental>
+                    <QRScannerExperimental02></QRScannerExperimental02>
                 </div>
             </div>
         </div>
