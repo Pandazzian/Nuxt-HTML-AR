@@ -72,165 +72,165 @@
   <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://unpkg.com/vue-qrcode-reader@5/dist/vue-qrcode-reader.umd.js"></script> -->
   <script>
-  import { QrcodeStream } from 'vue-qrcode-reader'
+  // import { QrcodeStream } from 'vue-qrcode-reader'
 
-  // Detection handling
-  const result = ref('')
+  // // Detection handling
+  // const result = ref('')
   
-  function onDetect(detectedCodes) {
-    console.log(detectedCodes)
-    result.value = JSON.stringify(detectedCodes.map((code) => code.rawValue))
-  }
+  // function onDetect(detectedCodes) {
+  //   console.log(detectedCodes)
+  //   result.value = JSON.stringify(detectedCodes.map((code) => code.rawValue))
+  // }
   
-  // Camera selection
-  const selectedConstraints = ref({ facingMode: 'environment' })
-  const defaultConstraintOptions = [
-    { label: 'rear camera', constraints: { facingMode: 'environment' } },
-    { label: 'front camera', constraints: { facingMode: 'user' } }
-  ]
-  const constraintOptions = ref(defaultConstraintOptions)
+  // // Camera selection
+  // const selectedConstraints = ref({ facingMode: 'environment' })
+  // const defaultConstraintOptions = [
+  //   { label: 'rear camera', constraints: { facingMode: 'environment' } },
+  //   { label: 'front camera', constraints: { facingMode: 'user' } }
+  // ]
+  // const constraintOptions = ref(defaultConstraintOptions)
   
-  async function onCameraReady() {
-    const devices = await navigator.mediaDevices.enumerateDevices()
-    const videoDevices = devices.filter(({ kind }) => kind === 'videoinput')
+  // async function onCameraReady() {
+  //   const devices = await navigator.mediaDevices.enumerateDevices()
+  //   const videoDevices = devices.filter(({ kind }) => kind === 'videoinput')
   
-    constraintOptions.value = [
-      ...defaultConstraintOptions,
-      ...videoDevices.map(({ deviceId, label }) => ({
-        label: `${label} (ID: ${deviceId})`,
-        constraints: { deviceId }
-      }))
-    ]
+  //   constraintOptions.value = [
+  //     ...defaultConstraintOptions,
+  //     ...videoDevices.map(({ deviceId, label }) => ({
+  //       label: `${label} (ID: ${deviceId})`,
+  //       constraints: { deviceId }
+  //     }))
+  //   ]
   
-    error.value = ''
-  }
+  //   error.value = ''
+  // }
   
-  // Track functions (Define functions outside reactive state)
-  function paintOutline(detectedCodes, ctx) {
-    for (const detectedCode of detectedCodes) {
-      const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
+  // // Track functions (Define functions outside reactive state)
+  // function paintOutline(detectedCodes, ctx) {
+  //   for (const detectedCode of detectedCodes) {
+  //     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
   
-      ctx.strokeStyle = 'red'
+  //     ctx.strokeStyle = 'red'
   
-      ctx.beginPath()
-      ctx.moveTo(firstPoint.x, firstPoint.y)
-      for (const { x, y } of otherPoints) {
-        ctx.lineTo(x, y)
-      }
-      ctx.lineTo(firstPoint.x, firstPoint.y)
-      ctx.closePath()
-      ctx.stroke()
-    }
-  }
+  //     ctx.beginPath()
+  //     ctx.moveTo(firstPoint.x, firstPoint.y)
+  //     for (const { x, y } of otherPoints) {
+  //       ctx.lineTo(x, y)
+  //     }
+  //     ctx.lineTo(firstPoint.x, firstPoint.y)
+  //     ctx.closePath()
+  //     ctx.stroke()
+  //   }
+  // }
   
-  function paintBoundingBox(detectedCodes, ctx) {
-    for (const detectedCode of detectedCodes) {
-      const {
-        boundingBox: { x, y, width, height }
-      } = detectedCode
+  // function paintBoundingBox(detectedCodes, ctx) {
+  //   for (const detectedCode of detectedCodes) {
+  //     const {
+  //       boundingBox: { x, y, width, height }
+  //     } = detectedCode
   
-      ctx.lineWidth = 2
-      ctx.strokeStyle = '#007bff'
-      ctx.strokeRect(x, y, width, height)
-    }
-  }
+  //     ctx.lineWidth = 2
+  //     ctx.strokeStyle = '#007bff'
+  //     ctx.strokeRect(x, y, width, height)
+  //   }
+  // }
   
-  function paintCenterText(detectedCodes, ctx) {
-    for (const detectedCode of detectedCodes) {
-      const { boundingBox, rawValue } = detectedCode
+  // function paintCenterText(detectedCodes, ctx) {
+  //   for (const detectedCode of detectedCodes) {
+  //     const { boundingBox, rawValue } = detectedCode
   
-      const centerX = boundingBox.x + boundingBox.width / 2
-      const centerY = boundingBox.y + boundingBox.height / 2
+  //     const centerX = boundingBox.x + boundingBox.width / 2
+  //     const centerY = boundingBox.y + boundingBox.height / 2
   
-      const fontSize = Math.max(12, (50 * boundingBox.width) / ctx.canvas.width)
+  //     const fontSize = Math.max(12, (50 * boundingBox.width) / ctx.canvas.width)
   
-      ctx.font = `bold ${fontSize}px sans-serif`
-      ctx.textAlign = 'center'
+  //     ctx.font = `bold ${fontSize}px sans-serif`
+  //     ctx.textAlign = 'center'
   
-      ctx.lineWidth = 3
-      ctx.strokeStyle = '#35495e'
-      ctx.strokeText(detectedCode.rawValue, centerX, centerY)
+  //     ctx.lineWidth = 3
+  //     ctx.strokeStyle = '#35495e'
+  //     ctx.strokeText(detectedCode.rawValue, centerX, centerY)
   
-      ctx.fillStyle = '#5cb984'
-      ctx.fillText(rawValue, centerX, centerY)
-    }
-  }
+  //     ctx.fillStyle = '#5cb984'
+  //     ctx.fillText(rawValue, centerX, centerY)
+  //   }
+  // }
   
-  // Track function options
-  const trackFunctions = {
-    outline: paintOutline,
-    boundingBox: paintBoundingBox,
-    centerText: paintCenterText,
-  }
-  const trackFunctionOptions = [
-    { text: 'nothing (default)', value: null },
-    { text: 'outline', value: 'outline' },
-    { text: 'centered text', value: 'centerText' },
-    { text: 'bounding box', value: 'boundingBox' }
-  ]
-  const selectedTrackFunction = ref(trackFunctionOptions[0].value) // Store as a string reference
+  // // Track function options
+  // const trackFunctions = {
+  //   outline: paintOutline,
+  //   boundingBox: paintBoundingBox,
+  //   centerText: paintCenterText,
+  // }
+  // const trackFunctionOptions = [
+  //   { text: 'nothing (default)', value: null },
+  //   { text: 'outline', value: 'outline' },
+  //   { text: 'centered text', value: 'centerText' },
+  //   { text: 'bounding box', value: 'boundingBox' }
+  // ]
+  // const selectedTrackFunction = ref(trackFunctionOptions[0].value) // Store as a string reference
   
-  const currentTrackFunction = computed(() => {
-    return trackFunctions[selectedTrackFunction.value] || undefined
-  })
+  // const currentTrackFunction = computed(() => {
+  //   return trackFunctions[selectedTrackFunction.value] || undefined
+  // })
   
-  // Barcode formats
-  const barcodeFormats = ref({
-    aztec: false,
-    code_128: false,
-    code_39: false,
-    code_93: false,
-    codabar: false,
-    databar: false,
-    databar_expanded: false,
-    data_matrix: false,
-    dx_film_edge: false,
-    ean_13: false,
-    ean_8: false,
-    itf: false,
-    maxi_code: false,
-    micro_qr_code: false,
-    pdf417: false,
-    qr_code: true,
-    rm_qr_code: false,
-    upc_a: false,
-    upc_e: false,
-    linear_codes: false,
-    matrix_codes: false
-  })
-  const selectedBarcodeFormats = computed(() => {
-    return Object.keys(barcodeFormats.value).filter((format) => barcodeFormats.value[format])
-  })
+  // // Barcode formats
+  // const barcodeFormats = ref({
+  //   aztec: false,
+  //   code_128: false,
+  //   code_39: false,
+  //   code_93: false,
+  //   codabar: false,
+  //   databar: false,
+  //   databar_expanded: false,
+  //   data_matrix: false,
+  //   dx_film_edge: false,
+  //   ean_13: false,
+  //   ean_8: false,
+  //   itf: false,
+  //   maxi_code: false,
+  //   micro_qr_code: false,
+  //   pdf417: false,
+  //   qr_code: true,
+  //   rm_qr_code: false,
+  //   upc_a: false,
+  //   upc_e: false,
+  //   linear_codes: false,
+  //   matrix_codes: false
+  // })
+  // const selectedBarcodeFormats = computed(() => {
+  //   return Object.keys(barcodeFormats.value).filter((format) => barcodeFormats.value[format])
+  // })
   
-  // Error handling
-  const error = ref('')
+  // // Error handling
+  // const error = ref('')
   
-  function onError(err) {
-    error.value = `[${err.name}]: `
+  // function onError(err) {
+  //   error.value = `[${err.name}]: `
   
-    if (err.name === 'NotAllowedError') {
-      error.value += 'you need to grant camera access permission'
-    } else if (err.name === 'NotFoundError') {
-      error.value += 'no camera on this device'
-    } else if (err.name === 'NotSupportedError') {
-      error.value += 'secure context required (HTTPS, localhost)'
-    } else if (err.name === 'NotReadableError') {
-      error.value += 'is the camera already in use?'
-    } else if (err.name === 'OverconstrainedError') {
-      error.value += 'installed cameras are not suitable'
-    } else if (err.name === 'StreamApiNotSupportedError') {
-      error.value += 'Stream API is not supported in this browser'
-    } else if (err.name === 'InsecureContextError') {
-      error.value += 'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
-    } else {
-      error.value += err.message
-    }
-  }
+  //   if (err.name === 'NotAllowedError') {
+  //     error.value += 'you need to grant camera access permission'
+  //   } else if (err.name === 'NotFoundError') {
+  //     error.value += 'no camera on this device'
+  //   } else if (err.name === 'NotSupportedError') {
+  //     error.value += 'secure context required (HTTPS, localhost)'
+  //   } else if (err.name === 'NotReadableError') {
+  //     error.value += 'is the camera already in use?'
+  //   } else if (err.name === 'OverconstrainedError') {
+  //     error.value += 'installed cameras are not suitable'
+  //   } else if (err.name === 'StreamApiNotSupportedError') {
+  //     error.value += 'Stream API is not supported in this browser'
+  //   } else if (err.name === 'InsecureContextError') {
+  //     error.value += 'Camera access is only permitted in secure context. Use HTTPS or localhost rather than HTTP.'
+  //   } else {
+  //     error.value += err.message
+  //   }
+  // }
   </script>
   
   
   <style scoped>
-  .error {
+  /* .error {
     font-weight: bold;
     color: red;
   }
@@ -238,6 +238,6 @@
     margin-right: 10px;
     white-space: nowrap;
     display: inline-block;
-  }
+  } */
   </style>
   
