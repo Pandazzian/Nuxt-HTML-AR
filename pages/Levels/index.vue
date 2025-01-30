@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-4">
                       <button v-if="level.locked" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
-                      <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white">Play</button>
+                      <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">Play</button>
                     </div>
                   </div>
                 </div>
@@ -41,7 +41,9 @@ import level2 from '@/assets/images/level2.webp';
 import level3 from '@/assets/images/level3.webp';
 import level4 from '@/assets/images/level4.webp';
 import level5 from '@/assets/images/level5.webp';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const levels = [
   {
     level: 1,
@@ -74,6 +76,9 @@ const levels = [
     locked: true
   },
 ];
+const navigateToLevel = (id) => {
+  router.push(`/Levels/${id}`);
+};
 </script>
 <style>
 img{

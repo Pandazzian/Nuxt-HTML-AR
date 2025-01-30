@@ -12,6 +12,7 @@
   "dependencies": {
     "@nuxt/content": "^2.13.4",
     "bootstrap": "^5.3.3",
+    "gsap": "^3.12.7",
     "jsqr": "^1.4.0",
     "nuxt": "^3.14.1592",
     "three": "^0.171.0",
