@@ -7,6 +7,9 @@
         <button @click="retry">Retry</button>
         <button @click="quit">Quit</button>
       </div>
+      <div v-else-if="isCongratulatory">
+        <button @click="continueGame">Continue</button>
+      </div>
       <button v-else @click="closeModal">Understood</button>
     </div>
   </div>
@@ -16,10 +19,11 @@
 const props = defineProps({
   isVisible: Boolean,
   message: String,
-  isGameOver: Boolean, // Add a prop to distinguish between modals
+  isGameOver: Boolean,
+  isCongratulatory: Boolean, // Add a prop for the congratulatory modal
 });
 
-const emit = defineEmits(['close', 'retry', 'quit']);
+const emit = defineEmits(['close', 'retry', 'quit', 'continue']);
 
 const closeModal = () => {
   emit('close');
@@ -31,6 +35,10 @@ const retry = () => {
 
 const quit = () => {
   emit('quit');
+};
+
+const continueGame = () => {
+  emit('continue');
 };
 </script>
 

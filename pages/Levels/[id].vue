@@ -167,11 +167,10 @@ onMounted(() => {
                   <img
                     v-for="index in lives"
                     :key="'life' + index"
-                    style="margin-left: 2px; margin-right: 2px"
+                    style="margin-left: 2px; margin-right: 2px;width: 20px;height: auto;"
                     src="@/assets/images/pixelateHeart.png"
-                    width="20px"
-                    height="auto"
                   />
+                  <h5>{{ timesComplete }}</h5>
                 </div>
               </div>
               <div class="row" id="demo">
@@ -216,7 +215,15 @@ onMounted(() => {
       @retry="retry"
       @quit="quit"
     />
-    </Background> 
+  
+    <!-- Congratulatory Modal -->
+    <Modal
+      :isVisible="showCongratulatoryModal"
+      message="Congratulations! You completed the level!"
+      :isCongratulatory="true"
+      @continue="continueGame"
+    />
+    </Background>  
   </template>
   
   <script setup>
@@ -229,7 +236,9 @@ onMounted(() => {
   const lives = ref(3); // Track lives
   const showModal = ref(false); // Control incorrect choice modal visibility
   const showGameOverModal = ref(false); // Control Game Over modal visibility
+  const showCongratulatoryModal = ref(false); // Control congratulatory modal visibility
   const modalMessage = ref(''); // Store modal message
+  const timesComplete = ref(0); // Track how many times the level is completed
   
   const levels = [
     {
@@ -326,6 +335,13 @@ onMounted(() => {
             }
           }
         });
+  
+        // Check if all targets are correctly occupied
+        if (checkAllTargetsCorrect()) {
+          timesComplete.value += 1; // Increment timesComplete
+          showCongratulatoryModal.value = true; // Show congratulatory modal
+        }
+  
         if (!snapMade) {
           if (e.target.targetAttachedTo) {
             e.target.targetAttachedTo.classList.remove('occupied');
@@ -337,6 +353,33 @@ onMounted(() => {
     });
   });
   
+  // Function to check if all targets are correctly occupied
+  const checkAllTargetsCorrect = () => {
+    const targets = document.querySelectorAll('.target');
+    let allCorrect = true;
+  
+    targets.forEach((target, targetIndex) => {
+      const choiceIndex = Array.from(targets).indexOf(target);
+      const choice = levels[id].choices[choiceIndex];
+      const expected = levels[id].destinations[targetIndex].expect;
+  
+      if (!target.classList.contains('occupied') || choice.text !== expected) {
+        allCorrect = false;
+      }
+    });
+  
+    return allCorrect;
+  };
+  
+  // Function to shuffle array
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+  
   const closeModal = () => {
     showModal.value = false; // Close incorrect choice modal
   };
@@ -347,6 +390,22 @@ onMounted(() => {
   
   const quit = () => {
     router.push('/Levels'); // Navigate to the Levels page
+  };
+  
+  const continueGame = () => {
+    showCongratulatoryModal.value = false; // Close congratulatory modal
+    shuffleArray(levels[id].choices); // Shuffle choices
+    resetDraggables(); // Reset draggables
+  };
+  
+  // Function to reset draggables
+  const resetDraggables = () => {
+    const boxes = document.querySelectorAll('.box');
+    boxes.forEach((box) => {
+      gsap.to(box, { duration: 0.1, x: 0, y: 0 });
+      box.targetAttachedTo?.classList.remove('occupied');
+      box.targetAttachedTo = undefined;
+    });
   };
   </script>
   
