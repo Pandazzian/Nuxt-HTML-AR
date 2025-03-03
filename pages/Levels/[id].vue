@@ -201,14 +201,13 @@ onMounted(() => {
           </div>
         </div>
       </div>
-    </Background>
-  
-    <!-- Modal -->
+      <!-- Modal -->
     <CustomModal
       :isVisible="showModal"
       :message="modalMessage"
       @close="closeModal"
     />
+    </Background>
   </template>
   
   <script setup>
