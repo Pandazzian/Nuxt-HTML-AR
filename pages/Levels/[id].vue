@@ -1,32 +1,24 @@
-<template>  
+<!-- <template>  
     <Background>
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-10">
                     <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <span style="font-size: 1.5rem;">lives:</span><img v-for="index in lives" :key="'life'+index" style="margin-left: 2px;margin-right: 2px;" src="@/assets/images/pixelateHeart.png" width="20px" height="auto">
+                            </div>
+                        </div>
                         <div class="row" id="demo">
                             <div class="col-4 source">
                                 <h3 style="color: aliceblue;">Source</h3>
-                                <div class="box dragger1">{{ "<!DOCTYPE html>" }}</div>
-                                <div class="box dragger2">{{"<html>"}}</div>
-                                <div class="box dragger3">{{ "</html>" }}</div>
+                                <div v-for="(choice,index) in levels[id].choices" :key="'choice' + index" :class="'box dragger'+(index+1)">{{ choice.text }}</div>
                             </div>
                             <div class="col-7 destination">
                                 <h3 style="color: aliceblue;">HTML file</h3>
-                                <div id="target1" class="target" @mouseenter="showTooltip(0)" @mouseleave="hideTooltip(0)">
-                                    line 1
-                                    <div v-if="tooltipVisible[0]" class="tooltip-box">Document Type Declaration</div>
+                                <div v-for="(tar,index) in levels[id].destinations" :key="'target'+index+'key'" :id="'target'+index" class="target">
+                                    line{{ index+1 }}
                                 </div>
-                                <div id="target2" class="target" @mouseenter="showTooltip(1)" @mouseleave="hideTooltip(1)">
-                                    line 2
-                                    <div v-if="tooltipVisible[1]" class="tooltip-box">Root element of an HTML document.</div>
-                                </div>
-                                <div id="target3" class="target" @mouseenter="showTooltip(2)" @mouseleave="hideTooltip(2)">
-                                    line 3
-                                    <div v-if="tooltipVisible[2]" class="tooltip-box">end of root element of an HTML document.</div>
-                                </div>
-                                <!-- <div id="target2" class="target">Root element of an HTML document.</div>
-                                <div id="target3" class="target">end of root element of an HTML document.</div> -->
                             </div>
                         </div>
                     </div>
@@ -41,6 +33,62 @@ import { onMounted } from 'vue';
 import { gsap } from 'gsap';
 import { Draggable } from 'gsap/Draggable';
 import { useRoute } from 'vue-router';
+let lives = 3;
+const levels = [
+  {
+    level: 0,
+    name: "Basic HTML Structure",
+    choices:[
+        {
+            text:"<!DOCTYPE html>",
+            role:"Use to set the document type for the whole file."
+        },
+        {
+            text:"<html>",
+            role:"html open tag goes on the outer most layer of the html file"
+        },
+        {
+            text:"</html>",
+            role:"html close tag goes on the outer most layer of the html file"
+        },
+    ],
+    destinations:[
+        {
+            expect:"<!DOCTYPE html>"
+        },
+        {
+            expect:"<html>"
+        },
+        {
+            expect:"</html>"
+        },
+    ]
+  },
+  {
+    level: 1,
+    name: "Adding Head and Body",
+    // image: level2,
+    // locked: true
+  },
+  {
+    level: 2,
+    name: "Adding Content to the Head",
+    // image: level3,
+    // locked: true
+  },
+  {
+    level: 3,
+    name: "Adding Content to the Body",
+    // image: level4,
+    // locked: true
+  },
+  {
+    level: 4,
+    name: "Adding Attributes and Styling",
+    // image: level5,
+    // locked: true
+  },
+];
 
 const route = useRoute();
 const id = route.params.id; // Get the dynamic ID from the URL
@@ -106,7 +154,178 @@ onMounted(() => {
         }
     });
 });
-</script>
+</script> -->
+<template>
+    <Background>
+      <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-10">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-12">
+                  <span style="font-size: 1.5rem;">lives:</span>
+                  <img
+                    v-for="index in lives"
+                    :key="'life' + index"
+                    style="margin-left: 2px; margin-right: 2px"
+                    src="@/assets/images/pixelateHeart.png"
+                    width="20px"
+                    height="auto"
+                  />
+                </div>
+              </div>
+              <div class="row" id="demo">
+                <div class="col-4 source">
+                  <h3 style="color: aliceblue">Source</h3>
+                  <div
+                    v-for="(choice, index) in levels[id].choices"
+                    :key="'choice' + index"
+                    :class="'box dragger' + (index + 1)"
+                  >
+                    {{ choice.text }}
+                  </div>
+                </div>
+                <div class="col-7 destination">
+                  <h3 style="color: aliceblue">HTML file</h3>
+                  <div
+                    v-for="(tar, index) in levels[id].destinations"
+                    :key="'target' + index + 'key'"
+                    :id="'target' + index"
+                    class="target"
+                  >
+                    line{{ index + 1 }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Background>
+  
+    <!-- Modal -->
+    <CustomModal
+      :isVisible="showModal"
+      :message="modalMessage"
+      @close="closeModal"
+    />
+  </template>
+  
+  <script setup>
+  import { ref, onMounted } from 'vue';
+  import { gsap } from 'gsap';
+  import { Draggable } from 'gsap/Draggable';
+  import { useRoute } from 'vue-router';
+  import CustomModal from '~/components/CustomModal.vue'; // Import the modal component
+  
+  const lives = ref(3); // Track lives
+  const showModal = ref(false); // Control modal visibility
+  const modalMessage = ref(''); // Store modal message
+  
+  const levels = [
+    {
+      level: 0,
+      name: 'Basic HTML Structure',
+      choices: [
+        {
+          text: '<!DOCTYPE html>',
+          role: 'Use to set the document type for the whole file.',
+        },
+        {
+          text: '<html>',
+          role: 'html open tag goes on the outer most layer of the html file',
+        },
+        {
+          text: '</html>',
+          role: 'html close tag goes on the outer most layer of the html file',
+        },
+      ],
+      destinations: [
+        { expect: '<!DOCTYPE html>' },
+        { expect: '<html>' },
+        { expect: '</html>' },
+      ],
+    },
+    // Other levels...
+  ];
+  
+  const route = useRoute();
+  const id = route.params.id; // Get the dynamic ID from the URL
+  
+  // Register Plugins
+  gsap.registerPlugin(Draggable);
+  
+  onMounted(() => {
+    const targets = document.querySelectorAll('.target');
+    const overlapThreshold = '50%';
+  
+    // Store original positions
+    const boxes = document.querySelectorAll('.box');
+    boxes.forEach((box) => {
+      box.originalLeft = box.offsetLeft;
+      box.originalTop = box.offsetTop;
+    });
+  
+    Draggable.create('.box', {
+      bounds: '#demo',
+      edgeResistance: 0.65,
+      type: 'x,y',
+      inertia: true,
+      onDrag() {
+        targets.forEach((target) => {
+          if (this.hitTest(target, overlapThreshold)) {
+            target.classList.add('show-over');
+          } else {
+            target.classList.remove('show-over');
+          }
+        });
+      },
+      onDragEnd(e) {
+        let snapMade = false;
+        targets.forEach((target, targetIndex) => {
+          if (this.hitTest(target, overlapThreshold)) {
+            const choiceIndex = Array.from(boxes).indexOf(e.target);
+            const choice = levels[id].choices[choiceIndex];
+            const expected = levels[id].destinations[targetIndex].expect;
+  
+            if (choice.text !== expected) {
+              lives.value -= 1; // Reduce lives
+              modalMessage.value = choice.role; // Set modal message
+              showModal.value = true; // Show modal
+            }
+  
+            if (!target.classList.contains('occupied')) {
+              target.classList.add('occupied');
+              gsap.to(e.target, {
+                duration: 0.1,
+                x: target.offsetLeft - e.target.offsetLeft,
+                y: target.offsetTop - e.target.offsetTop,
+              });
+              if (e.target.targetAttachedTo && e.target.targetAttachedTo !== target) {
+                e.target.targetAttachedTo.classList.remove('occupied');
+              }
+              e.target.targetAttachedTo = target;
+              snapMade = true;
+            }
+          }
+        });
+        if (!snapMade) {
+          if (e.target.targetAttachedTo) {
+            e.target.targetAttachedTo.classList.remove('occupied');
+            e.target.targetAttachedTo = undefined;
+          }
+          gsap.to(e.target, { duration: 0.1, x: 0, y: 0 });
+        }
+      },
+    });
+  });
+  
+  const closeModal = () => {
+    showModal.value = false; // Close modal
+  };
+  </script>
+  
+  <!-- Keep your existing styles -->
 
 <style scoped>
 body{

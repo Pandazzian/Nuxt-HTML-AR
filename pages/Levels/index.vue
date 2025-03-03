@@ -46,31 +46,31 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const levels = [
   {
-    level: 1,
+    level: 0,
     name: "Basic HTML Structure",
     image: level1,
     locked: false
   },
   {
-    level: 2,
+    level: 1,
     name: "Adding Head and Body",
     image: level2,
     locked: true
   },
   {
-    level: 3,
+    level: 2,
     name: "Adding Content to the Head",
     image: level3,
     locked: true
   },
   {
-    level: 4,
+    level: 3,
     name: "Adding Content to the Body",
     image: level4,
     locked: true
   },
   {
-    level: 5,
+    level: 4,
     name: "Adding Attributes and Styling",
     image: level5,
     locked: true
