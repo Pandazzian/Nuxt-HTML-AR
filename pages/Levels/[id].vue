@@ -201,24 +201,34 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <!-- Modal -->
-    <CustomModal
+      <!-- Modal for incorrect choices -->
+    <Modal
       :isVisible="showModal"
       :message="modalMessage"
       @close="closeModal"
     />
-    </Background>
+  
+    <!-- Game Over Modal -->
+    <Modal
+      :isVisible="showGameOverModal"
+      message="Game Over! Try again?"
+      :isGameOver="true"
+      @retry="retry"
+      @quit="quit"
+    />
+    </Background> 
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, watch } from 'vue';
   import { gsap } from 'gsap';
   import { Draggable } from 'gsap/Draggable';
-  import { useRoute } from 'vue-router';
-  import CustomModal from '~/components/CustomModal.vue'; // Import the modal component
+  import { useRoute, useRouter } from 'vue-router';
+  import Modal from '@/components/CustomModal.vue';
   
   const lives = ref(3); // Track lives
-  const showModal = ref(false); // Control modal visibility
+  const showModal = ref(false); // Control incorrect choice modal visibility
+  const showGameOverModal = ref(false); // Control Game Over modal visibility
   const modalMessage = ref(''); // Store modal message
   
   const levels = [
@@ -249,7 +259,15 @@ onMounted(() => {
   ];
   
   const route = useRoute();
+  const router = useRouter();
   const id = route.params.id; // Get the dynamic ID from the URL
+  
+  // Watch lives for Game Over
+  watch(lives, (newLives) => {
+    if (newLives === 0) {
+      showGameOverModal.value = true; // Show Game Over modal
+    }
+  });
   
   // Register Plugins
   gsap.registerPlugin(Draggable);
@@ -290,7 +308,7 @@ onMounted(() => {
             if (choice.text !== expected) {
               lives.value -= 1; // Reduce lives
               modalMessage.value = choice.role; // Set modal message
-              showModal.value = true; // Show modal
+              showModal.value = true; // Show incorrect choice modal
             }
   
             if (!target.classList.contains('occupied')) {
@@ -320,11 +338,18 @@ onMounted(() => {
   });
   
   const closeModal = () => {
-    showModal.value = false; // Close modal
+    showModal.value = false; // Close incorrect choice modal
+  };
+  
+  const retry = () => {
+    window.location.reload(); // Refresh the page
+  };
+  
+  const quit = () => {
+    router.push('/Levels'); // Navigate to the Levels page
   };
   </script>
   
-  <!-- Keep your existing styles -->
 
 <style scoped>
 body{
