@@ -17,11 +17,14 @@
                                     <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
                                 </div>
                                 <div class="col-8 col-sm-6 col-md-4 col-xl-2">
-                                    <XPBarCircular :xp="400" :maxXp="500"/>
+                                    <XPBarCircular :xp="EXP" :maxXp="10"/>
                                 </div>
                                 <div class="col-12 d-xl-none">
                                     <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
                                 </div>
+                                <button class="col-12 btn-warning" @click="resetExp">
+                                    reset EXP
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -33,6 +36,9 @@
   
 <script setup>
 import Background from '~/components/Background.vue';
+import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+
+const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
 </script>
   
 <style scoped>

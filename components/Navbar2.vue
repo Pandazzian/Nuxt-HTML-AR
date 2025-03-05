@@ -15,6 +15,7 @@
                 <li class="nav-item">
                 <NuxtLink class="nav-link" to="/">Sort</NuxtLink>
                 </li> -->
+                <h2>{{ EXP }}</h2>
             </ul>
             </div>
         </div>
@@ -22,8 +23,11 @@
     </div>
   </template>
   
-  <script setup>
-  </script>
+<script setup>
+  import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+
+  const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+</script>
   
   <style scoped>
   .navbar-brand{

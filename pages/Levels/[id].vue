@@ -221,7 +221,7 @@ onMounted(() => {
       :isVisible="showCongratulatoryModal"
       message="Congratulations! You completed the level!"
       :isCongratulatory="true"
-      @continue="continueGame"
+      @continue="levelComplete"
     />
     </Background>  
   </template>
@@ -232,7 +232,9 @@ onMounted(() => {
   import { Draggable } from 'gsap/Draggable';
   import { useRoute, useRouter } from 'vue-router';
   import Modal from '@/components/CustomModal.vue';
-  
+  import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+
+  const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
   const lives = ref(3); // Track lives
   const showModal = ref(false); // Control incorrect choice modal visibility
   const showGameOverModal = ref(false); // Control Game Over modal visibility
@@ -243,19 +245,21 @@ onMounted(() => {
   const levels = [
     {
       level: 0,
+      EXPonComplete: 10,
+      timesToComplete:3,
       name: 'Basic HTML Structure',
       choices: [
         {
           text: '<!DOCTYPE html>',
-          role: 'Use to set the document type for the whole file.',
+          role: 'Use to set the document type for the whole file.\nThis should be on the top most of the HTML file',
         },
         {
           text: '<html>',
-          role: 'html open tag goes on the outer most layer of the html file',
+          role: 'html open tag goes on the outer most layer of the html file.\nThis should be just under <!DOCTYPE html>',
         },
         {
           text: '</html>',
-          role: 'html close tag goes on the outer most layer of the html file',
+          role: 'html close tag goes on the outer most layer of the html file\nThis should be at the very last line of the HTML file',
         },
       ],
       destinations: [
@@ -339,6 +343,9 @@ onMounted(() => {
         // Check if all targets are correctly occupied
         if (checkAllTargetsCorrect()) {
           timesComplete.value += 1; // Increment timesComplete
+          continueGame()
+        }
+        if(timesComplete.value == levels[id].timesToComplete){
           showCongratulatoryModal.value = true; // Show congratulatory modal
         }
   
@@ -352,7 +359,10 @@ onMounted(() => {
       },
     });
   });
-  
+  const levelComplete = () => {
+    incrementExp(levels[id].EXPonComplete);
+    quit();
+  }
   // Function to check if all targets are correctly occupied
   const checkAllTargetsCorrect = () => {
     const targets = document.querySelectorAll('.target');

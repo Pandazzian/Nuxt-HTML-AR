@@ -21,7 +21,7 @@
                       <h4 class="white-text">{{ level.name }}</h4>
                     </div>
                     <div class="col-4">
-                      <button v-if="level.locked" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
+                      <button v-if="level.expRequirement>EXP" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
                       <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">Play</button>
                     </div>
                   </div>
@@ -42,37 +42,44 @@ import level3 from '@/assets/images/level3.webp';
 import level4 from '@/assets/images/level4.webp';
 import level5 from '@/assets/images/level5.webp';
 import { useRouter } from 'vue-router';
+import { useExp } from '@/composables/useEXP'; // Import the useExp composable
 
+const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
 const router = useRouter();
 const levels = [
   {
     level: 0,
     name: "Basic HTML Structure",
     image: level1,
+    expRequirement:0,
     locked: false
   },
   {
     level: 1,
     name: "Adding Head and Body",
     image: level2,
+    expRequirement:10,
     locked: true
   },
   {
     level: 2,
     name: "Adding Content to the Head",
     image: level3,
+    expRequirement:100,
     locked: true
   },
   {
     level: 3,
     name: "Adding Content to the Body",
     image: level4,
+    expRequirement:1000,
     locked: true
   },
   {
     level: 4,
     name: "Adding Attributes and Styling",
     image: level5,
+    expRequirement:10000,
     locked: true
   },
 ];
