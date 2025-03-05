@@ -11,6 +11,26 @@ export function useExp() {
     EXP.value = Number(localStorage.getItem('EXP')) || 0;
   }
 
+  const getLevel=()=>{
+    let level = 0;
+    if(EXP.value>=10&&EXP.value<100){
+        level = 1;
+    }
+    else if(EXP.value>=100&&EXP.value<1000){
+        level = 2;
+    }
+    else if(EXP.value>=1000&&EXP.value<10000){
+        level = 3;
+    }
+    else if(EXP.value>=10000&&EXP.value<20000){
+        level = 4;
+    }
+    else{
+        level = 3+parseInt(EXP.value/10000)
+    }
+    return level;
+  }
+
   // Function to increment EXP
   const incrementExp = (amount) => {
     EXP.value += amount;
@@ -31,5 +51,6 @@ export function useExp() {
     EXP,
     incrementExp,
     resetExp,
+    getLevel
   };
 }

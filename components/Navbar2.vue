@@ -15,7 +15,7 @@
                 <li class="nav-item">
                 <NuxtLink class="nav-link" to="/">Sort</NuxtLink>
                 </li> -->
-                <h2>{{ EXP }}</h2>
+                <h2>Level:{{ getLevel() }}</h2>
             </ul>
             </div>
         </div>
@@ -26,7 +26,7 @@
 <script setup>
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
 
-  const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+  const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
 </script>
   
   <style scoped>

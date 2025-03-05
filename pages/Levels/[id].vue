@@ -244,32 +244,109 @@ onMounted(() => {
   
   const levels = [
     {
-      level: 0,
-      EXPonComplete: 10,
-      timesToComplete:3,
-      name: 'Basic HTML Structure',
-      choices: [
-        {
-          text: '<!DOCTYPE html>',
-          role: 'Use to set the document type for the whole file.\nThis should be on the top most of the HTML file',
-        },
-        {
-          text: '<html>',
-          role: 'html open tag goes on the outer most layer of the html file.\nThis should be just under <!DOCTYPE html>',
-        },
-        {
-          text: '</html>',
-          role: 'html close tag goes on the outer most layer of the html file\nThis should be at the very last line of the HTML file',
-        },
-      ],
-      destinations: [
-        { expect: '<!DOCTYPE html>' },
-        { expect: '<html>' },
-        { expect: '</html>' },
-      ],
+        level: 0,
+        EXPonComplete: 10,
+        timesToComplete: 3,
+        name: 'Basic HTML Structure',
+        choices: [
+            { text: '<!DOCTYPE html>', role: 'Declares the document type and version (HTML5).\nThis should be at the very top of the HTML file before any other content.' },
+            { text: '<html>', role: 'Defines the root of the HTML document.\nThis should be just under <!DOCTYPE html> and wrap all content.' },
+            { text: '</html>', role: 'Closes the HTML document.\nThis should be the last tag in the file.' },
+        ],
+        destinations: [
+            { expect: '<!DOCTYPE html>' },
+            { expect: '<html>' },
+            { expect: '</html>' },
+        ],
     },
-    // Other levels...
-  ];
+    {
+        level: 1,
+        EXPonComplete: 90,
+        timesToComplete: 3,
+        name: 'Adding Head and Body',
+        choices: [
+            { text: '<!DOCTYPE html>', role: 'Declares the document type and version (HTML5).\nThis should be at the very top of the HTML file before any other content.' },
+            { text: '<html>', role: 'Defines the root of the HTML document.\nThis should be just under <!DOCTYPE html> and wrap all content.' },
+            { text: '</html>', role: 'Closes the HTML document.\nThis should be the last tag in the file.' },
+            { text: '<head>', role: 'Contains metadata, links to stylesheets, and scripts.\nThis should be placed directly under <html> before <body>.' },
+            { text: '</head>', role: 'Closes the <head> section.\nThis should be placed just before the <body> tag.' },
+            { text: '<body>', role: 'Contains the visible page content such as text, images, and links.\nThis should be placed directly after </head>.' },
+            { text: '</body>', role: 'Closes the <body> section.\nThis should be placed just before </html>.' },
+        ],
+        destinations: [
+            { expect: '<!DOCTYPE html>' },
+            { expect: '<html>' },
+            { expect: '<head>' },
+            { expect: '</head>' },
+            { expect: '<body>' },
+            { expect: '</body>' },
+            { expect: '</html>' },
+        ],
+    },
+    {
+        level: 2,
+        EXPonComplete: 900,
+        timesToComplete: 3,
+        name: 'Adding Content to the Head',
+        choices: [
+            { text: '<title>', role: 'Defines the title of the document shown in the browser tab.\nThis should be placed inside <head>.' },
+            { text: '</title>', role: 'Closes the <title> element.\nMust be placed immediately after <title>.' },
+            { text: '<meta charset="UTF-8">', role: 'Specifies the character encoding for the document (UTF-8 recommended).\nShould be placed inside <head>.' },
+            { text: '<meta name="viewport" content="width=device-width, initial-scale=1.0">', role: 'Ensures proper scaling and responsiveness on mobile devices.\nShould be placed inside <head>.' },
+            { text: '<link rel="stylesheet" href="styles.css">', role: 'Links an external CSS file to the document.\nShould be placed inside <head>.' },
+        ],
+        destinations: [
+            { expect: '<title>' },
+            { expect: '</title>' },
+            { expect: '<meta charset="UTF-8">' },
+            { expect: '<meta name="viewport" content="width=device-width, initial-scale=1.0">' },
+            { expect: '<link rel="stylesheet" href="styles.css">' },
+        ],
+    },
+    {
+        level: 3,
+        EXPonComplete: 9000,
+        timesToComplete: 3,
+        name: 'Adding Content to the Body',
+        choices: [
+            { text: '<h1>', role: 'Defines a top-level heading.\nShould be placed inside <body>.' },
+            { text: '</h1>', role: 'Closes the <h1> element.\nMust be placed immediately after its content.' },
+            { text: '<p>', role: 'Defines a paragraph of text.\nShould be placed inside <body>.' },
+            { text: '</p>', role: 'Closes the <p> element.\nMust be placed immediately after its content.' },
+            { text: '<img src="image.jpg" alt="A sample image">', role: 'Embeds an image into the document.\nShould be placed inside <body>.' },
+            { text: '<a href="https://example.com">', role: 'Defines a hyperlink to another page.\nShould be placed inside <body>.' },
+            { text: '</a>', role: 'Closes the <a> element.\nMust be placed immediately after its content.' },
+        ],
+        destinations: [
+            { expect: '<h1>' },
+            { expect: '</h1>' },
+            { expect: '<p>' },
+            { expect: '</p>' },
+            { expect: '<img src="image.jpg" alt="A sample image">' },
+            { expect: '<a href="https://example.com">' },
+            { expect: '</a>' },
+        ],
+    },
+    {
+        level: 4,
+        EXPonComplete: 10000,
+        timesToComplete: 3,
+        name: 'Adding Attributes and Styling',
+        choices: [
+            { text: '<h1 class="main-title">', role: 'Adds a class attribute for styling.\nShould be placed inside <body>.' },
+            { text: '<p id="intro">', role: 'Adds a unique ID to a paragraph for styling or scripting.\nShould be placed inside <body>.' },
+            { text: '<img src="image.jpg" alt="A sample image" style="width:100px;">', role: 'Adds inline styling to an image element.\nShould be placed inside <body>.' },
+            { text: '<a href="https://example.com" target="_blank">', role: 'Opens the link in a new tab using the target attribute.\nShould be placed inside <body>.' },
+        ],
+        destinations: [
+            { expect: '<h1 class="main-title">' },
+            { expect: '<p id="intro">' },
+            { expect: '<img src="image.jpg" alt="A sample image" style="width:100px;">' },
+            { expect: '<a href="https://example.com" target="_blank">' },
+        ],
+    }
+];
+
   
   const route = useRoute();
   const router = useRouter();
