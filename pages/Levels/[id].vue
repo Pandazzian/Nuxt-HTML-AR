@@ -357,17 +357,30 @@ onMounted(() => {
   const checkAllTargetsCorrect = () => {
     const targets = document.querySelectorAll('.target');
     let allCorrect = true;
-  
+
     targets.forEach((target, targetIndex) => {
-      const choiceIndex = Array.from(targets).indexOf(target);
+      // Find the box attached to this target
+      const attachedBox = Array.from(document.querySelectorAll('.box')).find(
+        (box) => box.targetAttachedTo === target
+      );
+
+      if (!attachedBox) {
+        // If no box is attached to this target, it's not correct
+        allCorrect = false;
+        return;
+      }
+
+      // Find the choice corresponding to the attached box
+      const choiceIndex = Array.from(document.querySelectorAll('.box')).indexOf(attachedBox);
       const choice = levels[id].choices[choiceIndex];
       const expected = levels[id].destinations[targetIndex].expect;
-  
-      if (!target.classList.contains('occupied') || choice.text !== expected) {
+
+      // Check if the choice matches the expected value
+      if (choice.text !== expected) {
         allCorrect = false;
       }
     });
-  
+
     return allCorrect;
   };
   
