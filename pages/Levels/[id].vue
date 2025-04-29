@@ -157,48 +157,51 @@ onMounted(() => {
 </script> -->
 <template>
     <Background>
-      <div class="container-fluid">
-        <div class="row justify-content-center">
-          <div class="col-10">
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-12">
-                  <span style="font-size: 1.5rem;">lives:</span>
-                  <img
-                    v-for="index in lives"
-                    :key="'life' + index"
-                    style="margin-left: 2px; margin-right: 2px;width: 20px;height: auto;"
-                    src="@/assets/images/pixelateHeart.png"
-                  />
-                  <h5>{{ timesComplete }}</h5>
-                </div>
-              </div>
-              <div class="row" id="demo">
-                <div class="col-4 source">
-                  <h3 style="color: aliceblue">Source</h3>
-                  <div
-                    v-for="(choice, index) in levels[id].choices"
-                    :key="'choice' + index"
-                    :class="'box dragger' + (index + 1)"
-                  >
-                    {{ choice.text }}
+      <div class="page-content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-10">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-12">
+                    <span style="font-size: 1.5rem;">lives:</span>
+                    <img
+                      v-for="index in lives"
+                      :key="'life' + index"
+                      style="margin-left: 2px; margin-right: 2px;width: 20px;height: auto;"
+                      src="@/assets/images/pixelateHeart.png"
+                    />
+                    <h5>{{ timesComplete }}</h5>
                   </div>
                 </div>
-                <div class="col-7 destination">
-                  <h3 style="color: aliceblue">HTML file</h3>
-                  <div
-                    v-for="(tar, index) in levels[id].destinations"
-                    :key="'target' + index + 'key'"
-                    :id="'target' + index"
-                    class="target"
-                  >
-                    line{{ index + 1 }}
+                <div class="row" id="demo">
+                  <div class="col-4 source">
+                    <h3 style="color: aliceblue">Source</h3>
+                    <div
+                      v-for="(choice, index) in levels[id].choices"
+                      :key="'choice' + index"
+                      :class="'box dragger' + (index + 1)"
+                    >
+                      {{ choice.text }}
+                    </div>
+                  </div>
+                  <div class="col-7 destination">
+                    <h3 style="color: aliceblue">HTML file</h3>
+                    <div
+                      v-for="(tar, index) in levels[id].destinations"
+                      :key="'target' + index + 'key'"
+                      :id="'target' + index"
+                      class="target"
+                    >
+                      line{{ index + 1 }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        
       </div>
       <!-- Modal for incorrect choices -->
     <Modal

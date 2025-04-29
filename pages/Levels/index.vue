@@ -1,33 +1,35 @@
 <template>
   <Background>
-    <div class="container-fluid">
-      <div class="row justify-content-center">
-        <div class="col-10" v-for="(level, index) in levels" :key="'level' + index+1">
-          <div class="card w-100 mt-2 mb-2 levels">
-            <div class="card-body">
-              
-              <div class="card-text">
-                <div class="container-fluid">
-                  <div class="row">
-                    <div class="col-2">
-                      <h3 class="card-title white-text">Level {{level.level}}</h3>
+    <div class="page-content">
+      <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-10" v-for="(level, index) in levels" :key="'level' + index+1">
+            <div class="card w-100 mt-2 mb-2 levels">
+              <div class="card-body">
+                
+                <div class="card-text">
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-2">
+                        <h3 class="card-title white-text">Level {{level.level}}</h3>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-2">
-                      <img :src=level.image :alt=level.name>
-                    </div>
-                    <div class="col-6" style="align-content: space-evenly;">
-                      <h4 class="white-text">{{ level.name }}</h4>
-                    </div>
-                    <div class="col-4">
-                      <button v-if="level.expRequirement>EXP" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
-                      <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">Play</button>
+                    <div class="row">
+                      <div class="col-2">
+                        <img :src=level.image :alt=level.name>
+                      </div>
+                      <div class="col-6" style="align-content: space-evenly;">
+                        <h4 class="white-text">{{ level.name }}</h4>
+                      </div>
+                      <div class="col-4">
+                        <button v-if="level.expRequirement>EXP" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
+                        <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">Play</button>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <!-- <a href="#" class="btn btn-primary">Button</a> -->
               </div>
-              <!-- <a href="#" class="btn btn-primary">Button</a> -->
             </div>
           </div>
         </div>

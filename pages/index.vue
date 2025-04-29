@@ -1,30 +1,32 @@
 <template> 
     <Background>
-        <div class="container-fluid mt-5" style="align-self: baseline; ">
-            <div class="row justify-content-center">
-                <div class="col-11 col-md-8">
-                    <div class="dashboard w-100">
-                        <div class="container-fluid">
-                            <div class="row justify-content-center">
-                                <div class="col-12 d-xl-none">
-                                    <h1 class="title">Level Up Your Web Dev Skills!</h1>
+        <div class="page-content">
+            <div class="container-fluid mt-5" style="align-self: baseline; ">
+                <div class="row justify-content-center">
+                    <div class="col-11 col-md-8">
+                        <div class="dashboard w-100">
+                            <div class="container-fluid">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 d-xl-none">
+                                        <h1 class="title">Level Up Your Web Dev Skills!</h1>
+                                    </div>
+                                    <div class="col-8 col-sm-6 col-md-4 col-xl-2">
+                                        <Avatar/>
+                                    </div>
+                                    <div class="col-12 col-xl-4 d-none d-xl-block">
+                                        <h1 class="title">Level Up Your Web Dev Skills!</h1>
+                                        <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
+                                    </div>
+                                    <div class="col-8 col-sm-6 col-md-4 col-xl-2">
+                                        <XPBarCircular :xp="EXP" :maxXp="10"/>
+                                    </div>
+                                    <div class="col-12 d-xl-none">
+                                        <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
+                                    </div>
+                                    <button class="col-12 btn-warning" @click="resetExp">
+                                        reset EXP
+                                    </button>
                                 </div>
-                                <div class="col-8 col-sm-6 col-md-4 col-xl-2">
-                                    <Avatar/>
-                                </div>
-                                <div class="col-12 col-xl-4 d-none d-xl-block">
-                                    <h1 class="title">Level Up Your Web Dev Skills!</h1>
-                                    <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
-                                </div>
-                                <div class="col-8 col-sm-6 col-md-4 col-xl-2">
-                                    <XPBarCircular :xp="EXP" :maxXp="10"/>
-                                </div>
-                                <div class="col-12 d-xl-none">
-                                    <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
-                                </div>
-                                <button class="col-12 btn-warning" @click="resetExp">
-                                    reset EXP
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -90,4 +92,5 @@ const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
+
 </style>
