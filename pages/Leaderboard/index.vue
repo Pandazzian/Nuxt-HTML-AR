@@ -1,15 +1,17 @@
 <template>
-  <Background>
-    <div class="page-content">
-      <ClientOnly>
-        <Leaderboard 
-          :leaderboard-data="leaderboard" 
-          :items-per-page="20"
-          :auto-scroll-to-user="true"
-        />
-      </ClientOnly>
-    </div>
-  </Background>
+  <ClientOnly>
+    <Background>
+      <div class="page-content">
+        <ClientOnly>
+          <Leaderboard 
+            :leaderboard-data="leaderboard" 
+            :items-per-page="20"
+            :auto-scroll-to-user="true"
+          />
+        </ClientOnly>
+      </div>
+    </Background>
+  </ClientOnly>
 </template>
 
 <script setup>
