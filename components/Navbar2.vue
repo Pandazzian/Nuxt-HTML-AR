@@ -10,8 +10,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item d-flex align-items-center">
-                <h2 class="mb-0 me-3">Level:{{ getLevel() }}</h2>
-                <AvatarSelector />
+                <ClientOnly>
+                    <h2 class="mb-0 me-3">Level:{{ getLevel() }}</h2>
+                    <AvatarSelector />
+                </ClientOnly>
                 </li>
             </ul>
             </div>
