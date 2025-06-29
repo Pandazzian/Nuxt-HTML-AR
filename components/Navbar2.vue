@@ -9,27 +9,27 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <!-- <li class="nav-item">
-                <NuxtLink class="nav-link" to="/">Start</NuxtLink>
+                <li class="nav-item d-flex align-items-center">
+                <h2 class="mb-0 me-3">Level:{{ getLevel() }}</h2>
+                <div class="navbar-avatar">
+                    <img :src="avatarImage" alt="User Avatar" class="avatar-img" />
+                </div>
                 </li>
-                <li class="nav-item">
-                <NuxtLink class="nav-link" to="/">Sort</NuxtLink>
-                </li> -->
-                <h2>Level:{{ getLevel() }}</h2>
             </ul>
             </div>
         </div>
         </nav>
     </div>
-  </template>
+</template>
   
 <script setup>
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+  import avatarImage from '@/assets/images/avatar.jpg';
 
   const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
 </script>
   
-  <style scoped>
+<style scoped>
   .navbar-brand{
     color: #082557;
   }
@@ -47,4 +47,21 @@
   .card{
     border-radius: 100px;
   }
-  </style>
+  .navbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
