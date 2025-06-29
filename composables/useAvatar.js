@@ -1,6 +1,7 @@
 // composables/useAvatar.js
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useExp } from './useEXP';
+import avatarImage from '@/assets/images/avatar.jpg';
 
 export function useAvatar() {
   const { getLevel } = useExp();
@@ -18,7 +19,7 @@ export function useAvatar() {
     {
       id: 'default',
       name: 'Default Avatar',
-      src: '/assets/images/avatar.jpg',
+      src: avatarImage,
       unlockLevel: 0,
       free: true
     },
@@ -134,8 +135,15 @@ export function useAvatar() {
     } else if (avatar.svg) {
       return { type: 'svg', content: avatar.svg };
     }
-    return { type: 'image', content: '/assets/images/avatar.jpg' };
+    return { type: 'image', content: avatarImage };
   };
+
+  // Watch for changes in selectedAvatar to trigger reactivity
+  watch(selectedAvatar, (newValue) => {
+    if (process.client) {
+      localStorage.setItem('selectedAvatar', newValue);
+    }
+  });
 
   return {
     avatars,
