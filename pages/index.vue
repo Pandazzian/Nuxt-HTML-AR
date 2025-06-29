@@ -237,4 +237,3 @@ const { EXP, incrementExp, resetExp, getLevel, getXpForNextLevel, getXpNeededFor
   }
 }
 </style>
-</template>
