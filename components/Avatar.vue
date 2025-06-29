@@ -1,11 +1,28 @@
 <template>
     <div class="avatar-container">
-      <img :src="avatarImage" alt="User Avatar" class="avatar" />
+      <img 
+        v-if="currentAvatarDisplay.type === 'image'" 
+        :src="currentAvatarDisplay.content" 
+        alt="User Avatar" 
+        class="avatar" 
+      />
+      <div 
+        v-else-if="currentAvatarDisplay.type === 'svg'" 
+        class="avatar-svg" 
+        v-html="currentAvatarDisplay.content"
+      ></div>
     </div>
   </template>
   
   <script setup>
-  import avatarImage from '@/assets/images/avatar.jpg';
+  import { computed } from 'vue';
+  import { useAvatar } from '@/composables/useAvatar';
+  
+  const { currentAvatar, getAvatarDisplay } = useAvatar();
+  
+  const currentAvatarDisplay = computed(() => {
+    return getAvatarDisplay(currentAvatar.value);
+  });
   </script>
   
   <style scoped>
@@ -26,5 +43,17 @@
     height: 100%;
     object-fit: cover;
   }
-  </style>
   
+  .avatar-svg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .avatar-svg svg {
+    width: 100%;
+    height: 100%;
+  }
+  </style>

@@ -11,9 +11,7 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item d-flex align-items-center">
                 <h2 class="mb-0 me-3">Level:{{ getLevel() }}</h2>
-                <div class="navbar-avatar">
-                    <img :src="avatarImage" alt="User Avatar" class="avatar-img" />
-                </div>
+                <AvatarSelector />
                 </li>
             </ul>
             </div>
@@ -24,7 +22,7 @@
   
 <script setup>
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
-  import avatarImage from '@/assets/images/avatar.jpg';
+  import AvatarSelector from './AvatarSelector.vue';
 
   const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
 </script>
@@ -46,22 +44,5 @@
   }
   .card{
     border-radius: 100px;
-  }
-  .navbar-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #ffffff;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 </style>
