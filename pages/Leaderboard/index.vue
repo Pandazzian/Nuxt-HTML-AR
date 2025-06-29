@@ -4,6 +4,7 @@
       <div class="page-content">
         <ClientOnly>
           <Leaderboard 
+            v-if="leaderboard"
             :leaderboard-data="leaderboard" 
             :items-per-page="20"
             :auto-scroll-to-user="true"
@@ -22,7 +23,7 @@ import Leaderboard from '~/components/Leaderboard.vue';
 import { useExp } from '@/composables/useEXP';
 
 const { EXP } = useExp();
-const leaderboard = ref([]);
+const leaderboard = ref(null);
 
 onMounted(() => {
   leaderboard.value = generateLeaderboard('my-seed-123', {
