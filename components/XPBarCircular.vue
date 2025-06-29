@@ -7,7 +7,8 @@
         <circle class="xp-progress" cx="50" cy="50" r="45" :style="progressStyle" />
       </svg>
       <div class="xp-text">
-        {{ props.xp }} XP
+        <div class="level-text">LVL {{ currentLevel }}</div>
+        <div class="xp-numbers">{{ currentXp }}/{{ nextLevelXp }}</div>
       </div>
     </div>
   </template>
@@ -17,14 +18,23 @@
   
   // Define props
   const props = defineProps({
-    xp: {
+    currentXp: {
       type: Number,
       required: true,
     },
-    maxXp: {
+    nextLevelXp: {
       type: Number,
       required: true,
     },
+    currentLevel: {
+      type: Number,
+      required: true,
+    },
+    progress: {
+      type: Number,
+      required: true,
+      default: 0
+    }
   });
   
   // Define circle stroke length (2πr for a circle of radius 45)
@@ -32,11 +42,11 @@
   
   // Compute XP Progress
   const progressStyle = computed(() => {
-    const percentage = Math.min(1, props.xp / props.maxXp);
-    const offset = circleLength * (1 - percentage); // Adjust stroke-dashoffset
+    const percentage = Math.min(1, Math.max(0, props.progress));
+    const offset = circleLength * (1 - percentage);
     return {
       strokeDasharray: circleLength,
-      strokeDashoffset: offset, // Ensures the bar starts from the same position
+      strokeDashoffset: offset,
       transition: 'stroke-dashoffset 0.6s ease-in-out',
     };
   });
@@ -58,16 +68,14 @@
   .xp-track {
     fill: none;
     stroke: #e0e0e0; /* Background track color */
-    stroke-width: 10;
+    stroke-width: 8;
   }
   
   .xp-progress {
     fill: none;
     stroke: #30e466; /* XP progress color */
-    stroke-width: 10;
+    stroke-width: 8;
     stroke-linecap: round;
-    stroke-dasharray: 283;
-    stroke-dashoffset: 283; /* Default empty */
     transition: stroke-dashoffset 0.6s ease-in-out;
   }
   
@@ -76,9 +84,19 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16px;
-    font-weight: bold;
+    text-align: center;
     color: #222;
   }
+
+  .level-text {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+
+  .xp-numbers {
+    font-size: 12px;
+    opacity: 0.8;
+  }
   </style>
-  
+</template>
