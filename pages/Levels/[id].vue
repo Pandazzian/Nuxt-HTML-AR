@@ -1,160 +1,3 @@
-<!-- <template>  
-    <Background>
-        <div class="container-fluid">
-            <div class="row justify-content-center">
-                <div class="col-10">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12">
-                                <span style="font-size: 1.5rem;">lives:</span><img v-for="index in lives" :key="'life'+index" style="margin-left: 2px;margin-right: 2px;" src="@/assets/images/pixelateHeart.png" width="20px" height="auto">
-                            </div>
-                        </div>
-                        <div class="row" id="demo">
-                            <div class="col-4 source">
-                                <h3 style="color: aliceblue;">Source</h3>
-                                <div v-for="(choice,index) in levels[id].choices" :key="'choice' + index" :class="'box dragger'+(index+1)">{{ choice.text }}</div>
-                            </div>
-                            <div class="col-7 destination">
-                                <h3 style="color: aliceblue;">HTML file</h3>
-                                <div v-for="(tar,index) in levels[id].destinations" :key="'target'+index+'key'" :id="'target'+index" class="target">
-                                    line{{ index+1 }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </Background>
-</template>
-
-<script setup>
-import { onMounted } from 'vue';
-import { gsap } from 'gsap';
-import { Draggable } from 'gsap/Draggable';
-import { useRoute } from 'vue-router';
-let lives = 3;
-const levels = [
-  {
-    level: 0,
-    name: "Basic HTML Structure",
-    choices:[
-        {
-            text:"<!DOCTYPE html>",
-            role:"Use to set the document type for the whole file."
-        },
-        {
-            text:"<html>",
-            role:"html open tag goes on the outer most layer of the html file"
-        },
-        {
-            text:"</html>",
-            role:"html close tag goes on the outer most layer of the html file"
-        },
-    ],
-    destinations:[
-        {
-            expect:"<!DOCTYPE html>"
-        },
-        {
-            expect:"<html>"
-        },
-        {
-            expect:"</html>"
-        },
-    ]
-  },
-  {
-    level: 1,
-    name: "Adding Head and Body",
-    // image: level2,
-    // locked: true
-  },
-  {
-    level: 2,
-    name: "Adding Content to the Head",
-    // image: level3,
-    // locked: true
-  },
-  {
-    level: 3,
-    name: "Adding Content to the Body",
-    // image: level4,
-    // locked: true
-  },
-  {
-    level: 4,
-    name: "Adding Attributes and Styling",
-    // image: level5,
-    // locked: true
-  },
-];
-
-const route = useRoute();
-const id = route.params.id; // Get the dynamic ID from the URL
-const tooltipVisible = ref([false,false,false]);
-
-const showTooltip = (id) => {
-    tooltipVisible[id].value = true;
-};
-
-const hideTooltip = (id) => {
-    tooltipVisible[id].value = false;
-};
-// Register Plugins
-gsap.registerPlugin(Draggable);
-
-onMounted(() => {
-    const targets = document.querySelectorAll(".target");
-    const overlapThreshold = "50%";
-    
-    // Store original positions
-    const boxes = document.querySelectorAll(".box");
-    boxes.forEach((box) => {
-        box.originalLeft = box.offsetLeft;
-        box.originalTop = box.offsetTop;
-    });
-
-    Draggable.create(".box", {
-        bounds: "#demo",
-        edgeResistance: 0.65,
-        type: "x,y",
-        inertia: true,
-        onDrag() {
-            targets.forEach(target => {
-                if (this.hitTest(target, overlapThreshold)) {
-                    target.classList.add("show-over");
-                } else {
-                    target.classList.remove("show-over");
-                }
-            });
-        },
-        onDragEnd(e) {
-            let snapMade = false;
-            targets.forEach(target => {
-                if (this.hitTest(target, overlapThreshold)) {
-                    if (!target.classList.contains("occupied")) {
-                        target.classList.add("occupied");
-                        gsap.to(e.target, { duration: 0.1, x: target.offsetLeft - e.target.offsetLeft, y: target.offsetTop - e.target.offsetTop });
-                        if (e.target.targetAttachedTo && e.target.targetAttachedTo !== target) {
-                            e.target.targetAttachedTo.classList.remove("occupied");
-                        }
-                        e.target.targetAttachedTo = target;
-                        snapMade = true;
-                    }
-                }
-            });
-            if (!snapMade) {
-                if (e.target.targetAttachedTo) {
-                    e.target.targetAttachedTo.classList.remove("occupied");
-                    e.target.targetAttachedTo = undefined;
-                }
-                gsap.to(e.target, { duration: 0.1, x: 0, y: 0 });
-            }
-        }
-    });
-});
-</script> -->
 <template>
     <Background>
       <div class="page-content">
@@ -172,9 +15,28 @@ onMounted(() => {
                       src="@/assets/images/pixelateHeart.png"
                     />
                     <h5>{{ timesComplete }}</h5>
+                    
+                    <!-- Timer Display -->
+                    <div v-if="gameStarted && !gameFinished" class="timer-display">
+                      <span class="timer-text">Time: {{ formatTime(timeRemaining) }}</span>
+                      <div class="timer-bar">
+                        <div class="timer-progress" :style="{ width: timerProgress + '%' }"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="row" id="demo">
+                
+                <!-- Ready Button Overlay -->
+                <div v-if="!gameStarted" class="ready-overlay">
+                  <div class="ready-content">
+                    <h2>Ready to Start?</h2>
+                    <p>You have 2 minutes to complete this level.</p>
+                    <p>The faster you complete it, the more EXP you'll earn!</p>
+                    <button class="ready-button" @click="startGame">Start Level</button>
+                  </div>
+                </div>
+                
+                <div class="row" id="demo" :class="{ 'game-disabled': !gameStarted || gameFinished }">
                   <div class="col-4 source">
                     <h3 style="color: aliceblue">Source</h3>
                     <div
@@ -218,11 +80,20 @@ onMounted(() => {
       @retry="retry"
       @quit="quit"
     />
+    
+    <!-- Time Up Modal -->
+    <Modal
+      :isVisible="showTimeUpModal"
+      message="Time's up! You didn't complete the level in time."
+      :isGameOver="true"
+      @retry="retry"
+      @quit="quit"
+    />
   
     <!-- Congratulatory Modal -->
     <Modal
       :isVisible="showCongratulatoryModal"
-      message="Congratulations! You completed the level!"
+      :message="congratulatoryMessage"
       :isCongratulatory="true"
       @continue="levelComplete"
     />
@@ -230,7 +101,7 @@ onMounted(() => {
   </template>
   
   <script setup>
-  import { ref, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
   import { gsap } from 'gsap';
   import { Draggable } from 'gsap/Draggable';
   import { useRoute, useRouter } from 'vue-router';
@@ -241,9 +112,19 @@ onMounted(() => {
   const lives = ref(3); // Track lives
   const showModal = ref(false); // Control incorrect choice modal visibility
   const showGameOverModal = ref(false); // Control Game Over modal visibility
+  const showTimeUpModal = ref(false); // Control Time Up modal visibility
   const showCongratulatoryModal = ref(false); // Control congratulatory modal visibility
   const modalMessage = ref(''); // Store modal message
+  const congratulatoryMessage = ref(''); // Store congratulatory message
   const timesComplete = ref(0); // Track how many times the level is completed
+  
+  // Timer related variables
+  const gameStarted = ref(false);
+  const gameFinished = ref(false);
+  const timeRemaining = ref(120); // 2 minutes in seconds
+  const timerInterval = ref(null);
+  const startTime = ref(null);
+  const completionTime = ref(null);
   
   const levels = [
     {
@@ -355,9 +236,62 @@ onMounted(() => {
   const router = useRouter();
   const id = route.params.id; // Get the dynamic ID from the URL
   
+  // Computed property for timer progress bar
+  const timerProgress = computed(() => {
+    return (timeRemaining.value / 120) * 100;
+  });
+  
+  // Function to format time display
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  // Function to calculate EXP based on completion time
+  const calculateTimeBonus = (completionTimeSeconds) => {
+    const baseExp = levels[id].EXPonComplete;
+    const maxTime = 120; // 2 minutes
+    const timeBonus = Math.max(0, (maxTime - completionTimeSeconds) / maxTime);
+    return Math.floor(baseExp * (1 + timeBonus)); // Up to 2x EXP for very fast completion
+  };
+  
+  // Function to start the game
+  const startGame = () => {
+    gameStarted.value = true;
+    startTime.value = Date.now();
+    
+    // Start the timer
+    timerInterval.value = setInterval(() => {
+      timeRemaining.value--;
+      
+      if (timeRemaining.value <= 0) {
+        // Time's up!
+        clearInterval(timerInterval.value);
+        gameFinished.value = true;
+        showTimeUpModal.value = true;
+      }
+    }, 1000);
+    
+    // Initialize draggables after game starts
+    nextTick(() => {
+      initializeDraggables();
+    });
+  };
+  
+  // Function to stop the timer
+  const stopTimer = () => {
+    if (timerInterval.value) {
+      clearInterval(timerInterval.value);
+      timerInterval.value = null;
+    }
+  };
+  
   // Watch lives for Game Over
   watch(lives, (newLives) => {
     if (newLives === 0) {
+      stopTimer();
+      gameFinished.value = true;
       showGameOverModal.value = true; // Show Game Over modal
     }
   });
@@ -365,7 +299,8 @@ onMounted(() => {
   // Register Plugins
   gsap.registerPlugin(Draggable);
   
-  onMounted(() => {
+  // Function to initialize draggables
+  const initializeDraggables = () => {
     const targets = document.querySelectorAll('.target');
     const overlapThreshold = '50%';
   
@@ -382,6 +317,8 @@ onMounted(() => {
       type: 'x,y',
       inertia: true,
       onDrag() {
+        if (!gameStarted.value || gameFinished.value) return;
+        
         targets.forEach((target) => {
           if (this.hitTest(target, overlapThreshold)) {
             target.classList.add('show-over');
@@ -391,6 +328,8 @@ onMounted(() => {
         });
       },
       onDragEnd(e) {
+        if (!gameStarted.value || gameFinished.value) return;
+        
         let snapMade = false;
         targets.forEach((target, targetIndex) => {
           if (this.hitTest(target, overlapThreshold)) {
@@ -426,6 +365,13 @@ onMounted(() => {
           continueGame()
         }
         if(timesComplete.value == levels[id].timesToComplete){
+          // Calculate completion time and EXP bonus
+          completionTime.value = Math.floor((Date.now() - startTime.value) / 1000);
+          const expEarned = calculateTimeBonus(completionTime.value);
+          congratulatoryMessage.value = `Congratulations! You completed the level in ${formatTime(completionTime.value)}!\nEXP Earned: ${expEarned}`;
+          
+          stopTimer();
+          gameFinished.value = true;
           showCongratulatoryModal.value = true; // Show congratulatory modal
         }
   
@@ -438,11 +384,22 @@ onMounted(() => {
         }
       },
     });
+  };
+  
+  onMounted(() => {
+    // Don't initialize draggables immediately, wait for game to start
   });
+  
+  onUnmounted(() => {
+    stopTimer();
+  });
+  
   const levelComplete = () => {
-    incrementExp(levels[id].EXPonComplete);
+    const expEarned = calculateTimeBonus(completionTime.value);
+    incrementExp(expEarned);
     quit();
   }
+  
   // Function to check if all targets are correctly occupied
   const checkAllTargetsCorrect = () => {
     const targets = document.querySelectorAll('.target');
@@ -516,6 +473,90 @@ onMounted(() => {
 <style scoped>
 body{
  font-family:sans-serif;
+}
+
+.ready-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.ready-content {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 500px;
+  margin: 20px;
+}
+
+.ready-content h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.ready-content p {
+  color: #5a6c7d;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.ready-button {
+  background: linear-gradient(135deg, #4A90E2, #357ABD);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ready-button:hover {
+  background: linear-gradient(135deg, #357ABD, #2E6DA4);
+  transform: translateY(-2px);
+}
+
+.timer-display {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.timer-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.timer-bar {
+  width: 300px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.timer-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+  border-radius: 10px;
+  transition: width 1s linear;
+}
+
+.game-disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .box {
@@ -597,5 +638,19 @@ body{
 .show-over{
     background-color: red;
     /* max-width: 150px; */
+}
+
+@media (max-width: 768px) {
+  .timer-bar {
+    width: 250px;
+  }
+  
+  .ready-content {
+    padding: 30px 20px;
+  }
+  
+  .timer-text {
+    font-size: 1.3rem;
+  }
 }
 </style>
