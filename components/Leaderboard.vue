@@ -136,6 +136,7 @@
     }
 
     .current-user {
+      color: #1890ff;
         background-color: #e6f7ff;
         font-weight: bold;
         position: relative;

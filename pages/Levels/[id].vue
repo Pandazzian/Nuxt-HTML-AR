@@ -1,160 +1,3 @@
-<!-- <template>  
-    <Background>
-        <div class="container-fluid">
-            <div class="row justify-content-center">
-                <div class="col-10">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12">
-                                <span style="font-size: 1.5rem;">lives:</span><img v-for="index in lives" :key="'life'+index" style="margin-left: 2px;margin-right: 2px;" src="@/assets/images/pixelateHeart.png" width="20px" height="auto">
-                            </div>
-                        </div>
-                        <div class="row" id="demo">
-                            <div class="col-4 source">
-                                <h3 style="color: aliceblue;">Source</h3>
-                                <div v-for="(choice,index) in levels[id].choices" :key="'choice' + index" :class="'box dragger'+(index+1)">{{ choice.text }}</div>
-                            </div>
-                            <div class="col-7 destination">
-                                <h3 style="color: aliceblue;">HTML file</h3>
-                                <div v-for="(tar,index) in levels[id].destinations" :key="'target'+index+'key'" :id="'target'+index" class="target">
-                                    line{{ index+1 }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </Background>
-</template>
-
-<script setup>
-import { onMounted } from 'vue';
-import { gsap } from 'gsap';
-import { Draggable } from 'gsap/Draggable';
-import { useRoute } from 'vue-router';
-let lives = 3;
-const levels = [
-  {
-    level: 0,
-    name: "Basic HTML Structure",
-    choices:[
-        {
-            text:"<!DOCTYPE html>",
-            role:"Use to set the document type for the whole file."
-        },
-        {
-            text:"<html>",
-            role:"html open tag goes on the outer most layer of the html file"
-        },
-        {
-            text:"</html>",
-            role:"html close tag goes on the outer most layer of the html file"
-        },
-    ],
-    destinations:[
-        {
-            expect:"<!DOCTYPE html>"
-        },
-        {
-            expect:"<html>"
-        },
-        {
-            expect:"</html>"
-        },
-    ]
-  },
-  {
-    level: 1,
-    name: "Adding Head and Body",
-    // image: level2,
-    // locked: true
-  },
-  {
-    level: 2,
-    name: "Adding Content to the Head",
-    // image: level3,
-    // locked: true
-  },
-  {
-    level: 3,
-    name: "Adding Content to the Body",
-    // image: level4,
-    // locked: true
-  },
-  {
-    level: 4,
-    name: "Adding Attributes and Styling",
-    // image: level5,
-    // locked: true
-  },
-];
-
-const route = useRoute();
-const id = route.params.id; // Get the dynamic ID from the URL
-const tooltipVisible = ref([false,false,false]);
-
-const showTooltip = (id) => {
-    tooltipVisible[id].value = true;
-};
-
-const hideTooltip = (id) => {
-    tooltipVisible[id].value = false;
-};
-// Register Plugins
-gsap.registerPlugin(Draggable);
-
-onMounted(() => {
-    const targets = document.querySelectorAll(".target");
-    const overlapThreshold = "50%";
-    
-    // Store original positions
-    const boxes = document.querySelectorAll(".box");
-    boxes.forEach((box) => {
-        box.originalLeft = box.offsetLeft;
-        box.originalTop = box.offsetTop;
-    });
-
-    Draggable.create(".box", {
-        bounds: "#demo",
-        edgeResistance: 0.65,
-        type: "x,y",
-        inertia: true,
-        onDrag() {
-            targets.forEach(target => {
-                if (this.hitTest(target, overlapThreshold)) {
-                    target.classList.add("show-over");
-                } else {
-                    target.classList.remove("show-over");
-                }
-            });
-        },
-        onDragEnd(e) {
-            let snapMade = false;
-            targets.forEach(target => {
-                if (this.hitTest(target, overlapThreshold)) {
-                    if (!target.classList.contains("occupied")) {
-                        target.classList.add("occupied");
-                        gsap.to(e.target, { duration: 0.1, x: target.offsetLeft - e.target.offsetLeft, y: target.offsetTop - e.target.offsetTop });
-                        if (e.target.targetAttachedTo && e.target.targetAttachedTo !== target) {
-                            e.target.targetAttachedTo.classList.remove("occupied");
-                        }
-                        e.target.targetAttachedTo = target;
-                        snapMade = true;
-                    }
-                }
-            });
-            if (!snapMade) {
-                if (e.target.targetAttachedTo) {
-                    e.target.targetAttachedTo.classList.remove("occupied");
-                    e.target.targetAttachedTo = undefined;
-                }
-                gsap.to(e.target, { duration: 0.1, x: 0, y: 0 });
-            }
-        }
-    });
-});
-</script> -->
 <template>
     <Background>
       <div class="page-content">
@@ -163,17 +6,24 @@ onMounted(() => {
             <div class="col-10">
               <div class="container-fluid">
                 <div class="row">
-                  <div class="col-12">
-                    <span style="font-size: 1.5rem;">lives:</span>
-                    <img
-                      v-for="index in lives"
-                      :key="'life' + index"
-                      style="margin-left: 2px; margin-right: 2px;width: 20px;height: auto;"
-                      src="@/assets/images/pixelateHeart.png"
-                    />
-                    <h5>{{ timesComplete }}</h5>
+                  <div class="col-12 header-row">
+                    <div class="header-left">
+                      <span class="lives-label">lives:</span>
+                      <img
+                        v-for="index in lives"
+                        :key="'life' + index"
+                        class="life-icon"
+                        src="@/assets/images/pixelateHeart.png"
+                        alt="life"
+                      />
+                      <h5 class="times-complete">{{ timesComplete }}</h5>
+                    </div>
+                    <div class="header-right">
+                      <button class="instructions-btn" @click="openSlides">How to Play</button>
+                    </div>
                   </div>
                 </div>
+
                 <div class="row" id="demo">
                   <div class="col-4 source">
                     <h3 style="color: aliceblue">Source</h3>
@@ -201,34 +51,60 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        
       </div>
+
+      <!-- Slide / Instruction Modal (click overlay to dismiss) -->
+      <div v-if="showSlidesModal" class="slide-overlay" @click.self="closeSlides">
+        <div class="slide-modal" role="dialog" aria-modal="true" aria-label="How to play">
+          <div class="slide-header">
+            <h3>{{ slides[currentSlide].title }}</h3>
+            <button class="close-slide" @click="closeSlides" aria-label="Close">&times;</button>
+          </div>
+          <div class="slide-body">
+            <p v-html="slides[currentSlide].body"></p>
+          </div>
+          <div class="slide-controls">
+            <button @click="prevSlide" :disabled="currentSlide === 0">Prev</button>
+            <div class="dots">
+              <button
+                v-for="(s, idx) in slides"
+                :key="idx"
+                :class="['dot', { active: idx === currentSlide }]"
+                @click="currentSlide = idx"
+                :aria-label="'Go to slide ' + (idx + 1)"
+              />
+            </div>
+            <button @click="nextSlide">{{ currentSlide < slides.length - 1 ? 'Next' : 'Got it' }}</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Modal for incorrect choices -->
-    <Modal
-      :isVisible="showModal"
-      :message="modalMessage"
-      @close="closeModal"
-    />
-  
-    <!-- Game Over Modal -->
-    <Modal
-      :isVisible="showGameOverModal"
-      message="Game Over! Try again?"
-      :isGameOver="true"
-      @retry="retry"
-      @quit="quit"
-    />
-  
-    <!-- Congratulatory Modal -->
-    <Modal
-      :isVisible="showCongratulatoryModal"
-      message="Congratulations! You completed the level!"
-      :isCongratulatory="true"
-      @continue="levelComplete"
-    />
-    </Background>  
+      <Modal
+        :isVisible="showModal"
+        :message="modalMessage"
+        @close="closeModal"
+      />
+
+      <!-- Game Over Modal -->
+      <Modal
+        :isVisible="showGameOverModal"
+        message="Game Over! Try again?"
+        :isGameOver="true"
+        @retry="retry"
+        @quit="quit"
+      />
+
+      <!-- Congratulatory Modal -->
+      <Modal
+        :isVisible="showCongratulatoryModal"
+        message="Congratulations! You completed the level!"
+        :isCongratulatory="true"
+        @continue="levelComplete"
+      />
+    </Background>
   </template>
-  
+
   <script setup>
   import { ref, onMounted, watch } from 'vue';
   import { gsap } from 'gsap';
@@ -244,7 +120,27 @@ onMounted(() => {
   const showCongratulatoryModal = ref(false); // Control congratulatory modal visibility
   const modalMessage = ref(''); // Store modal message
   const timesComplete = ref(0); // Track how many times the level is completed
-  
+
+  // Slides modal state
+  const showSlidesModal = ref(true); // show before game start
+  const currentSlide = ref(0);
+  const slides = ref([
+    { title: 'Welcome', body: 'Welcome to the HTML assembly game. Drag the tags from the <strong>Source</strong> column to the correct line in the <strong>HTML file</strong> column.' },
+    { title: 'How to Play', body: 'Drag a box and drop it onto the target line. If it\'s correct it will snap into place. Incorrect drops will cost a life and show a hint.' },
+    { title: 'Tips', body: 'On small screens the layout stacks vertically. Use the <strong>How to Play</strong> button anytime to re-open these instructions.' },
+  ]);
+
+  const openSlides = () => { showSlidesModal.value = true; currentSlide.value = 0; };
+  const closeSlides = () => { showSlidesModal.value = false; };
+
+  const nextSlide = () => {
+    if (currentSlide.value < slides.value.length - 1) currentSlide.value++;
+    else closeSlides();
+  };
+  const prevSlide = () => {
+    if (currentSlide.value > 0) currentSlide.value--;
+  };
+
   const levels = [
     {
         level: 0,
@@ -426,6 +322,7 @@ onMounted(() => {
           continueGame()
         }
         if(timesComplete.value == levels[id].timesToComplete){
+          incrementExp(levels[id].EXPonComplete);
           showCongratulatoryModal.value = true; // Show congratulatory modal
         }
   
@@ -440,7 +337,6 @@ onMounted(() => {
     });
   });
   const levelComplete = () => {
-    incrementExp(levels[id].EXPonComplete);
     quit();
   }
   // Function to check if all targets are correctly occupied
@@ -517,6 +413,26 @@ onMounted(() => {
 body{
  font-family:sans-serif;
 }
+
+.header-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:8px;
+}
+.header-left { display:flex; align-items:center; gap:8px; }
+.header-right { display:flex; align-items:center; gap:8px; }
+
+.instructions-btn {
+  background:#007bff;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.instructions-btn:active { transform: translateY(1px); }
 
 .box {
     background-color: #91e600;
@@ -597,5 +513,42 @@ body{
 .show-over{
     background-color: red;
     /* max-width: 150px; */
+}
+
+/* slide modal styles */
+.slide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+}
+.slide-modal {
+  background: #ffffff;
+  max-width: 720px;
+  width: 100%;
+  border-radius: 10px;
+  padding: 16px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.slide-header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.slide-header h3 { margin:0; }
+.close-slide { background:transparent; border:none; font-size:24px; line-height:1; cursor:pointer; }
+.slide-body { margin-top:12px; color:#222; min-height:90px; }
+.slide-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; }
+.slide-controls button { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#f5f5f5; cursor:pointer; }
+.dots { display:flex; gap:6px; align-items:center; justify-content:center; flex:1; }
+.dot { width:10px; height:10px; border-radius:50%; background:#ddd; border:none; cursor:pointer; }
+.dot.active { background:#007bff; }
+
+/* responsive adjustments for modal */
+@media (max-width: 480px) {
+  .slide-modal { padding:12px; }
+  .slide-body { font-size:14px; }
+  .box, .target { max-width: 120px; height:44px; line-height:44px; }
 }
 </style>

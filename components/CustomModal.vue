@@ -1,5 +1,5 @@
 <!-- components/Modal.vue -->
-<template>
+<!-- <template>
   <div v-if="isVisible" class="modal-overlay" style="z-index: 1500;">
     <div class="modal-content">
       <p>{{ message }}</p>
@@ -70,5 +70,269 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+</style> -->
+<template>
+  <div v-if="isVisible" class="modal-overlay" style="z-index: 1500;">
+    <div class="modal-content">
+      <p>{{ message }}</p>
+      
+      <!-- Leaderboard section for congratulatory modal -->
+      <div v-if="isCongratulatory" class="leaderboard-section">
+        <Leaderboard 
+          :leaderboard-data="leaderboard" 
+          :items-per-page="20"
+          :auto-scroll-to-user="true"
+        />
+        <div v-if="showProgress" class="rank-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+          </div>
+          <span class="progress-text">Rank improved: {{ oldRank }} → {{ newRank }}</span>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div v-if="isGameOver" class="modal-actions">
+        <button @click="retry">Retry</button>
+        <button @click="quit">Quit</button>
+      </div>
+      <div v-else-if="isCongratulatory" class="modal-actions">
+        <button @click="continueGame">Continue</button>
+      </div>
+      <button v-else @click="closeModal">Understood</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { gsap } from 'gsap';
+
+import Leaderboard from '~/components/Leaderboard.vue';
+import { useExp } from '@/composables/useEXP';
+
+const { EXP } = useExp();
+const leaderboard = ref([]);
+
+onMounted(() => {
+  leaderboard.value = generateLeaderboard('my-seed-123', {
+    name: "User5489",
+    country: "Thailand",
+    exp: EXP.value
+  });
+});
+
+const props = defineProps({
+  isVisible: Boolean,
+  message: String,
+  isGameOver: Boolean,
+  isCongratulatory: Boolean,
+  leaderboardData: {
+    type: Array,
+    default: () => []
+  },
+  userRank: {
+    type: Object,
+    default: null
+  },
+  showProgress: {
+    type: Boolean,
+    default: false
+  },
+  oldRank: {
+    type: Number,
+    default: 0
+  },
+  newRank: {
+    type: Number,
+    default: 0
+  }
+});
+
+const emit = defineEmits(['close', 'retry', 'quit', 'continue']);
+
+const highlightRank = ref(false);
+const progress = ref(0);
+const displayedLeaderboard = ref([]);
+
+// Watch for changes in leaderboard data
+watch(() => props.leaderboardData, (newData) => {
+  if (newData.length > 0) {
+    // Show top 5 plus the user's rank if not in top 5
+    const top5 = newData.slice(0, 5);
+    const userEntry = newData.find(entry => entry.isCurrentUser);
+    
+    if (userEntry && !top5.some(entry => entry.isCurrentUser)) {
+      displayedLeaderboard.value = [...top5, userEntry];
+    } else {
+      displayedLeaderboard.value = top5;
+    }
+  }
+}, { immediate: true });
+
+// Animation effects
+onMounted(() => {
+  if (props.isCongratulatory) {
+    // Highlight pulse animation
+    const highlightInterval = setInterval(() => {
+      highlightRank.value = !highlightRank.value;
+    }, 500);
+    
+    setTimeout(() => {
+      clearInterval(highlightInterval);
+      highlightRank.value = true;
+    }, 3000);
+    
+    // Progress bar animation
+    if (props.showProgress) {
+      gsap.to(progress, {
+        value: 100,
+        duration: 2,
+        ease: "power1.out"
+      });
+    }
+  }
+});
+
+const closeModal = () => {
+  emit('close');
+};
+
+const retry = () => {
+  emit('retry');
+};
+
+const quit = () => {
+  emit('quit');
+};
+
+const continueGame = () => {
+  emit('continue');
+};
+</script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #1a1a2e;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+button {
+  margin: 8px;
+  padding: 8px 16px;
+  background-color: #0f3460;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #1a5a8a;
+}
+
+.modal-actions {
+  margin-top: 20px;
+}
+
+/* Leaderboard styles */
+.leaderboard-section {
+  margin: 20px 0;
+}
+
+.leaderboard-container {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid #444;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+th {
+  background-color: #16213e;
+  position: sticky;
+  top: 0;
+}
+
+.current-user {
+  /* color: #1a1a2e; */
+  background-color: rgba(0, 200, 255, 0.1);
+  font-weight: bold;
+}
+
+.highlight {
+  animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    background-color: rgba(0, 200, 255, 0.1);
+  }
+  to {
+    background-color: rgba(0, 200, 255, 0.3);
+  }
+}
+
+/* Rank progress styles */
+.rank-progress {
+  margin-top: 15px;
+}
+
+.progress-bar {
+  background-color: #16213e;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  background-color: #4CAF50;
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: #aaa;
 }
 </style>
