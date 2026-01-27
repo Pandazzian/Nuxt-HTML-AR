@@ -83,6 +83,7 @@ button {
           :leaderboard-data="leaderboard" 
           :items-per-page="20"
           :auto-scroll-to-user="true"
+          :show-pagination="true"
         />
         <div v-if="showProgress" class="rank-progress">
           <div class="progress-bar">
@@ -268,8 +269,6 @@ button:hover {
 }
 
 .leaderboard-container {
-  max-height: 300px;
-  overflow-y: auto;
   margin-bottom: 15px;
   border: 1px solid #444;
   border-radius: 8px;
@@ -281,9 +280,10 @@ table {
 }
 
 th, td {
-  padding: 10px 15px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #444;
+  font-size: 0.9rem;
 }
 
 th {
@@ -334,5 +334,40 @@ th {
 .progress-text {
   font-size: 0.9rem;
   color: #aaa;
+}
+
+/* Pagination styles for leaderboard */
+.leaderboard-section :deep(.pagination) {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.leaderboard-section :deep(.pagination button) {
+  padding: 6px 12px;
+  background-color: #0f3460;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.leaderboard-section :deep(.pagination button:hover:not(:disabled)) {
+  background-color: #1a5a8a;
+}
+
+.leaderboard-section :deep(.pagination button:disabled) {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.leaderboard-section :deep(.pagination span) {
+  color: white;
+  font-size: 0.9rem;
 }
 </style>

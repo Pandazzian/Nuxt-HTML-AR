@@ -93,4 +93,8 @@ const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
   text-align: center;
 }
 
+button.btn-warning {
+  display: none;
+}
+
 </style>

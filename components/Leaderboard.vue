@@ -119,27 +119,40 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        color: #222;
     }
 
     th, td {
         padding: 10px;
         text-align: left;
         border-bottom: 1px solid #ddd;
+        color: #222;
     }
 
     th {
         background-color: #f4f4f4;
+        color: #333;
+        font-weight: 600;
     }
 
-    tr:hover {
-        background-color: #f9f9f9;
+    tbody tr {
+        background-color: #ffffff;
+        color: #222;
+    }
+
+    tbody tr:hover {
+        background-color: #f0f0f0;
     }
 
     .current-user {
-      color: #1890ff;
+        color: #1890ff;
         background-color: #e6f7ff;
         font-weight: bold;
         position: relative;
+    }
+
+    .current-user:hover {
+        background-color: #d4ebf7;
     }
 
     .current-user::after {

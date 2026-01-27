@@ -124,11 +124,41 @@
   // Slides modal state
   const showSlidesModal = ref(true); // show before game start
   const currentSlide = ref(0);
-  const slides = ref([
-    { title: 'Welcome', body: 'Welcome to the HTML assembly game. Drag the tags from the <strong>Source</strong> column to the correct line in the <strong>HTML file</strong> column.' },
-    { title: 'How to Play', body: 'Drag a box and drop it onto the target line. If it\'s correct it will snap into place. Incorrect drops will cost a life and show a hint.' },
-    { title: 'Tips', body: 'On small screens the layout stacks vertically. Use the <strong>How to Play</strong> button anytime to re-open these instructions.' },
-  ]);
+  const slides = ref([]);
+
+  // Tutorial slides for each level
+  const levelTutorials = {
+    0: [
+      { title: 'Basic HTML Structure', body: 'Learn the fundamental building blocks of HTML. You\'ll arrange the <strong>DOCTYPE</strong>, <strong>html</strong>, and closing tags in the correct order.' },
+      { title: 'How to Play', body: 'Drag a tag from the <strong>Source</strong> column on the left and drop it onto the corresponding line in the <strong>HTML file</strong> column on the right. If correct, it will snap into place!' },
+      { title: 'Tips', body: 'Remember: <strong>&lt;!DOCTYPE html&gt;</strong> comes first, then <strong>&lt;html&gt;</strong>, and finally <strong>&lt;/html&gt;</strong> at the end. Pay attention to the hints when you get it wrong!' },
+    ],
+    1: [
+      { title: 'Adding Head and Body', body: 'Now we\'re adding the two main sections of an HTML document: the <strong>&lt;head&gt;</strong> and <strong>&lt;body&gt;</strong> sections.' },
+      { title: 'Structure Order', body: '<strong>&lt;head&gt;</strong> contains metadata and goes right after <strong>&lt;html&gt;</strong>. <strong>&lt;body&gt;</strong> contains all visible content and comes after <strong>&lt;/head&gt;</strong>.' },
+      { title: 'How to Play', body: 'Drag each tag to its correct position. The <strong>Source</strong> column shows all the tags you need. Match them to the lines in the <strong>HTML file</strong> column.' },
+    ],
+    2: [
+      { title: 'Adding Content to Head', body: 'The <strong>&lt;head&gt;</strong> section contains important metadata like the page title, character encoding, and links to stylesheets.' },
+      { title: 'Key Tags', body: 'Learn about <strong>&lt;title&gt;</strong> for the page title, <strong>&lt;meta&gt;</strong> tags for character encoding and viewport settings, and <strong>&lt;link&gt;</strong> for stylesheets.' },
+      { title: 'Remember', body: 'All these tags go inside the <strong>&lt;head&gt;&lt;/head&gt;</strong> section. The user never sees these in the browser tab, except for the title!' },
+    ],
+    3: [
+      { title: 'Adding Content to Body', body: 'The <strong>&lt;body&gt;</strong> section contains all the visible content users see: headings, paragraphs, images, and links.' },
+      { title: 'Common Tags', body: 'Learn about <strong>&lt;h1&gt;</strong> for headings, <strong>&lt;p&gt;</strong> for paragraphs, <strong>&lt;img&gt;</strong> for images, and <strong>&lt;a&gt;</strong> for links.' },
+      { title: 'Pro Tip', body: 'Remember to close your tags! Every opening tag like <strong>&lt;h1&gt;</strong> needs a matching closing tag like <strong>&lt;/h1&gt;</strong>.' },
+    ],
+    4: [
+      { title: 'Adding Attributes and Styling', body: 'HTML elements can have <strong>attributes</strong> that provide additional information or styling. Learn how to use <strong>class</strong>, <strong>id</strong>, <strong>style</strong>, and <strong>target</strong> attributes.' },
+      { title: 'Attributes', body: '<strong>class</strong> is for styling groups of elements, <strong>id</strong> is for unique elements, <strong>style</strong> adds inline CSS, and <strong>target</strong> controls link behavior.' },
+      { title: 'Example', body: 'For instance: <strong>&lt;a href="url" target="_blank"&gt;</strong> opens a link in a new tab. <strong>&lt;img src="image.jpg" alt="description"&gt;</strong> displays an image with alternative text.' },
+    ],
+  };
+
+  // Set slides based on current level
+  const route = useRoute();
+  const id = route.params.id;
+  slides.value = levelTutorials[id] || levelTutorials[0];
 
   const openSlides = () => { showSlidesModal.value = true; currentSlide.value = 0; };
   const closeSlides = () => { showSlidesModal.value = false; };
@@ -246,10 +276,7 @@
     }
 ];
 
-  
-  const route = useRoute();
   const router = useRouter();
-  const id = route.params.id; // Get the dynamic ID from the URL
   
   // Watch lives for Game Over
   watch(lives, (newLives) => {
@@ -446,6 +473,11 @@ body{
     border-radius: 10px;
     cursor: grab;
     margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+    box-sizing: border-box;
 }
 
 .target {
