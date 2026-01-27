@@ -8,7 +8,7 @@
                 <div class="row">
                   <div class="col-12 header-row">
                     <div class="header-left">
-                      <span class="lives-label">lives:</span>
+                      <span class="lives-label">{{ t('game.lives') }}:</span>
                       <img
                         v-for="index in lives"
                         :key="'life' + index"
@@ -19,14 +19,14 @@
                       <h5 class="times-complete">{{ timesComplete }}</h5>
                     </div>
                     <div class="header-right">
-                      <button class="instructions-btn" @click="openSlides">How to Play</button>
+                      <button class="instructions-btn" @click="openSlides">{{ t('game.howToPlay') }}</button>
                     </div>
                   </div>
                 </div>
 
                 <div class="row" id="demo">
                   <div class="col-4 source">
-                    <h3 style="color: aliceblue">Source</h3>
+                    <h3 style="color: aliceblue">{{ t('game.source') }}</h3>
                     <div
                       v-for="(choice, index) in levels[id].choices"
                       :key="'choice' + index"
@@ -36,14 +36,14 @@
                     </div>
                   </div>
                   <div class="col-7 destination">
-                    <h3 style="color: aliceblue">HTML file</h3>
+                    <h3 style="color: aliceblue">{{ t('game.htmlFile') }}</h3>
                     <div
                       v-for="(tar, index) in levels[id].destinations"
                       :key="'target' + index + 'key'"
                       :id="'target' + index"
                       class="target"
                     >
-                      line{{ index + 1 }}
+                      {{ t('game.line') }}{{ index + 1 }}
                     </div>
                   </div>
                 </div>
@@ -64,7 +64,7 @@
             <p v-html="slides[currentSlide].body"></p>
           </div>
           <div class="slide-controls">
-            <button @click="prevSlide" :disabled="currentSlide === 0">Prev</button>
+            <button @click="prevSlide" :disabled="currentSlide === 0">{{ t('game.prev') }}</button>
             <div class="dots">
               <button
                 v-for="(s, idx) in slides"
@@ -74,7 +74,7 @@
                 :aria-label="'Go to slide ' + (idx + 1)"
               />
             </div>
-            <button @click="nextSlide">{{ currentSlide < slides.length - 1 ? 'Next' : 'Got it' }}</button>
+            <button @click="nextSlide">{{ currentSlide < slides.length - 1 ? t('game.next') : t('game.gotIt') }}</button>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@
       <!-- Game Over Modal -->
       <Modal
         :isVisible="showGameOverModal"
-        message="Game Over! Try again?"
+        :message="t('game.gameOver')"
         :isGameOver="true"
         @retry="retry"
         @quit="quit"
@@ -98,7 +98,7 @@
       <!-- Congratulatory Modal -->
       <Modal
         :isVisible="showCongratulatoryModal"
-        message="Congratulations! You completed the level!"
+        :message="t('game.congratulations')"
         :isCongratulatory="true"
         @continue="levelComplete"
       />
@@ -112,8 +112,10 @@
   import { useRoute, useRouter } from 'vue-router';
   import Modal from '@/components/CustomModal.vue';
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+  import { useI18n } from '@/composables/useI18n';
 
   const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+  const { t, currentLanguage } = useI18n();
   const lives = ref(3); // Track lives
   const showModal = ref(false); // Control incorrect choice modal visibility
   const showGameOverModal = ref(false); // Control Game Over modal visibility
@@ -126,38 +128,49 @@
   const currentSlide = ref(0);
   const slides = ref([]);
 
-  // Tutorial slides for each level
-  const levelTutorials = {
-    0: [
-      { title: 'Basic HTML Structure', body: 'Learn the fundamental building blocks of HTML. You\'ll arrange the <strong>DOCTYPE</strong>, <strong>html</strong>, and closing tags in the correct order.' },
-      { title: 'How to Play', body: 'Drag a tag from the <strong>Source</strong> column on the left and drop it onto the corresponding line in the <strong>HTML file</strong> column on the right. If correct, it will snap into place!' },
-      { title: 'Tips', body: 'Remember: <strong>&lt;!DOCTYPE html&gt;</strong> comes first, then <strong>&lt;html&gt;</strong>, and finally <strong>&lt;/html&gt;</strong> at the end. Pay attention to the hints when you get it wrong!' },
-    ],
-    1: [
-      { title: 'Adding Head and Body', body: 'Now we\'re adding the two main sections of an HTML document: the <strong>&lt;head&gt;</strong> and <strong>&lt;body&gt;</strong> sections.' },
-      { title: 'Structure Order', body: '<strong>&lt;head&gt;</strong> contains metadata and goes right after <strong>&lt;html&gt;</strong>. <strong>&lt;body&gt;</strong> contains all visible content and comes after <strong>&lt;/head&gt;</strong>.' },
-      { title: 'How to Play', body: 'Drag each tag to its correct position. The <strong>Source</strong> column shows all the tags you need. Match them to the lines in the <strong>HTML file</strong> column.' },
-    ],
-    2: [
-      { title: 'Adding Content to Head', body: 'The <strong>&lt;head&gt;</strong> section contains important metadata like the page title, character encoding, and links to stylesheets.' },
-      { title: 'Key Tags', body: 'Learn about <strong>&lt;title&gt;</strong> for the page title, <strong>&lt;meta&gt;</strong> tags for character encoding and viewport settings, and <strong>&lt;link&gt;</strong> for stylesheets.' },
-      { title: 'Remember', body: 'All these tags go inside the <strong>&lt;head&gt;&lt;/head&gt;</strong> section. The user never sees these in the browser tab, except for the title!' },
-    ],
-    3: [
-      { title: 'Adding Content to Body', body: 'The <strong>&lt;body&gt;</strong> section contains all the visible content users see: headings, paragraphs, images, and links.' },
-      { title: 'Common Tags', body: 'Learn about <strong>&lt;h1&gt;</strong> for headings, <strong>&lt;p&gt;</strong> for paragraphs, <strong>&lt;img&gt;</strong> for images, and <strong>&lt;a&gt;</strong> for links.' },
-      { title: 'Pro Tip', body: 'Remember to close your tags! Every opening tag like <strong>&lt;h1&gt;</strong> needs a matching closing tag like <strong>&lt;/h1&gt;</strong>.' },
-    ],
-    4: [
-      { title: 'Adding Attributes and Styling', body: 'HTML elements can have <strong>attributes</strong> that provide additional information or styling. Learn how to use <strong>class</strong>, <strong>id</strong>, <strong>style</strong>, and <strong>target</strong> attributes.' },
-      { title: 'Attributes', body: '<strong>class</strong> is for styling groups of elements, <strong>id</strong> is for unique elements, <strong>style</strong> adds inline CSS, and <strong>target</strong> controls link behavior.' },
-      { title: 'Example', body: 'For instance: <strong>&lt;a href="url" target="_blank"&gt;</strong> opens a link in a new tab. <strong>&lt;img src="image.jpg" alt="description"&gt;</strong> displays an image with alternative text.' },
-    ],
+  // Tutorial slides for each level - dynamically get from i18n
+  const getLevelTutorials = () => {
+    return {
+      0: [
+        { title: t('tutorials.0.slide1.title'), body: t('tutorials.0.slide1.body') },
+        { title: t('tutorials.0.slide2.title'), body: t('tutorials.0.slide2.body') },
+        { title: t('tutorials.0.slide3.title'), body: t('tutorials.0.slide3.body') },
+      ],
+      1: [
+        { title: t('tutorials.1.slide1.title'), body: t('tutorials.1.slide1.body') },
+        { title: t('tutorials.1.slide2.title'), body: t('tutorials.1.slide2.body') },
+        { title: t('tutorials.1.slide3.title'), body: t('tutorials.1.slide3.body') },
+      ],
+      2: [
+        { title: t('tutorials.2.slide1.title'), body: t('tutorials.2.slide1.body') },
+        { title: t('tutorials.2.slide2.title'), body: t('tutorials.2.slide2.body') },
+        { title: t('tutorials.2.slide3.title'), body: t('tutorials.2.slide3.body') },
+      ],
+      3: [
+        { title: t('tutorials.3.slide1.title'), body: t('tutorials.3.slide1.body') },
+        { title: t('tutorials.3.slide2.title'), body: t('tutorials.3.slide2.body') },
+        { title: t('tutorials.3.slide3.title'), body: t('tutorials.3.slide3.body') },
+      ],
+      4: [
+        { title: t('tutorials.4.slide1.title'), body: t('tutorials.4.slide1.body') },
+        { title: t('tutorials.4.slide2.title'), body: t('tutorials.4.slide2.body') },
+        { title: t('tutorials.4.slide3.title'), body: t('tutorials.4.slide3.body') },
+      ],
+    };
   };
 
   // Set slides based on current level
   const route = useRoute();
   const id = route.params.id;
+  
+  // Watch for language changes
+  watch(currentLanguage, () => {
+    const levelTutorials = getLevelTutorials();
+    slides.value = levelTutorials[id] || levelTutorials[0];
+  });
+  
+  // Initialize slides
+  const levelTutorials = getLevelTutorials();
   slides.value = levelTutorials[id] || levelTutorials[0];
 
   const openSlides = () => { showSlidesModal.value = true; currentSlide.value = 0; };
@@ -576,6 +589,12 @@ body{
 .dots { display:flex; gap:6px; align-items:center; justify-content:center; flex:1; }
 .dot { width:10px; height:10px; border-radius:50%; background:#ddd; border:none; cursor:pointer; }
 .dot.active { background:#007bff; }
+
+.life-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0 4px;
+}
 
 /* responsive adjustments for modal */
 @media (max-width: 480px) {

@@ -95,13 +95,13 @@ button {
 
       <!-- Action buttons -->
       <div v-if="isGameOver" class="modal-actions">
-        <button @click="retry">Retry</button>
-        <button @click="quit">Quit</button>
+        <button @click="retry">{{ t('game.retry') }}</button>
+        <button @click="quit">{{ t('game.quit') }}</button>
       </div>
       <div v-else-if="isCongratulatory" class="modal-actions">
-        <button @click="continueGame">Continue</button>
+        <button @click="continueGame">{{ t('game.continue') }}</button>
       </div>
-      <button v-else @click="closeModal">Understood</button>
+      <button v-else @click="closeModal">{{ t('game.understood') }}</button>
     </div>
   </div>
 </template>
@@ -112,8 +112,10 @@ import { gsap } from 'gsap';
 
 import Leaderboard from '~/components/Leaderboard.vue';
 import { useExp } from '@/composables/useEXP';
+import { useI18n } from '@/composables/useI18n';
 
 const { EXP } = useExp();
+const { t } = useI18n();
 const leaderboard = ref([]);
 
 onMounted(() => {

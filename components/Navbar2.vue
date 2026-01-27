@@ -15,6 +15,15 @@
                 <li class="nav-item">
                 <NuxtLink class="nav-link" to="/">Sort</NuxtLink>
                 </li> -->
+                <li class="nav-item me-3" v-if="isMounted">
+                  <button 
+                    class="btn btn-sm"
+                    :style="{ backgroundColor: currentLanguage.value === 'en' ? '#007bff' : '#28a745', color: 'white' }"
+                    @click="toggleLanguage"
+                  >
+                    {{ currentLanguage.value === 'en' ? 'EN' : 'TH' }}
+                  </button>
+                </li>
                 <h2>Level:{{ getLevel() }}</h2>
             </ul>
             </div>
@@ -24,9 +33,22 @@
   </template>
   
 <script setup>
+  import { computed, ref, onMounted } from 'vue';
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+  import { useI18n } from '@/composables/useI18n';
 
   const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
+  const { t, setLanguage, currentLanguage } = useI18n();
+  const langDisplay = computed(() => currentLanguage.value.toUpperCase());
+  const isMounted = ref(false);
+
+  const toggleLanguage = () => {
+    setLanguage(currentLanguage.value === 'en' ? 'th' : 'en');
+  };
+
+  onMounted(() => {
+    isMounted.value = true;
+  });
 </script>
   
   <style scoped>

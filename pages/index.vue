@@ -8,23 +8,23 @@
                             <div class="container-fluid">
                                 <div class="row justify-content-center">
                                     <div class="col-12 d-xl-none">
-                                        <h1 class="title">Level Up Your Web Dev Skills!</h1>
+                                        <h1 class="title">{{ t('index.title') }}</h1>
                                     </div>
                                     <div class="col-8 col-sm-6 col-md-4 col-xl-2">
                                         <Avatar/>
                                     </div>
                                     <div class="col-12 col-xl-4 d-none d-xl-block">
-                                        <h1 class="title">Level Up Your Web Dev Skills!</h1>
-                                        <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
+                                        <h1 class="title">{{ t('index.title') }}</h1>
+                                        <NuxtLink to="/Levels" class="start-button w-100">{{ t('index.startButton') }}</NuxtLink>
                                     </div>
                                     <div class="col-8 col-sm-6 col-md-4 col-xl-2">
                                         <XPBarCircular :xp="EXP" :maxXp="10"/>
                                     </div>
                                     <div class="col-12 d-xl-none">
-                                        <NuxtLink to="/Levels" class="start-button w-100">Start Learning</NuxtLink>
+                                        <NuxtLink to="/Levels" class="start-button w-100">{{ t('index.startButton') }}</NuxtLink>
                                     </div>
                                     <button class="col-12 btn-warning" @click="resetExp">
-                                        reset EXP
+                                        {{ t('index.resetExp') }}
                                     </button>
                                 </div>
                             </div>
@@ -39,8 +39,10 @@
 <script setup>
 import Background from '~/components/Background.vue';
 import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+import { useI18n } from '~/composables/useI18n';
 
 const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+const { t } = useI18n();
 </script>
   
 <style scoped>

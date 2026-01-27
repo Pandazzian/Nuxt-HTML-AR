@@ -22,8 +22,8 @@
                         <h4 class="white-text">{{ level.name }}</h4>
                       </div>
                       <div class="col-4">
-                        <button v-if="level.expRequirement>EXP" type="button" class="btn btn-secondary btn-lg w-100" disabled>Locked</button>
-                        <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">Play</button>
+                        <button v-if="level.expRequirement>EXP" type="button" class="btn btn-secondary btn-lg w-100" disabled>{{ t('common.locked') }}</button>
+                        <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white"  @click="navigateToLevel(level.level)">{{ t('common.play') }}</button>
                       </div>
                     </div>
                   </div>
@@ -45,8 +45,10 @@ import level4 from '@/assets/images/level4.webp';
 import level5 from '@/assets/images/level5.webp';
 import { useRouter } from 'vue-router';
 import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+import { useI18n } from '@/composables/useI18n';
 
 const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+const { t } = useI18n();
 const router = useRouter();
 const levels = [
   {
