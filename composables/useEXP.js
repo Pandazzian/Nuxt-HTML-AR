@@ -1,15 +1,16 @@
 // composables/useExp.js
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 export function useExp() {
-  // Initialize EXP with a default value
+  // Initialize EXP with a default value for consistent SSR/hydration
   const EXP = ref(0);
 
-  // Only access localStorage on the client side
-  if (process.client) {
-    // Load EXP from localStorage or initialize to 0
-    EXP.value = Number(localStorage.getItem('EXP')) || 0;
-  }
+  // Load EXP from localStorage only after component is mounted
+  onMounted(() => {
+    if (process.client) {
+      EXP.value = Number(localStorage.getItem('EXP')) || 0;
+    }
+  });
 
   const getLevel=()=>{
     let level = 0;
@@ -31,6 +32,41 @@ export function useExp() {
     return level;
   }
 
+  // Function to get XP required for next level
+  const getXpForNextLevel = () => {
+    const currentLevel = getLevel();
+    if (currentLevel === 0) return 10;
+    if (currentLevel === 1) return 100;
+    if (currentLevel === 2) return 1000;
+    if (currentLevel === 3) return 10000;
+    if (currentLevel === 4) return 20000;
+    return (currentLevel - 3) * 10000 + 10000;
+  };
+
+  // Function to get XP needed for next level
+  const getXpNeededForNextLevel = () => {
+    return getXpForNextLevel() - EXP.value;
+  };
+
+  // Function to get current level progress (0-1)
+  const getCurrentLevelProgress = () => {
+    const currentLevel = getLevel();
+    let levelStartXp = 0;
+    
+    if (currentLevel === 0) levelStartXp = 0;
+    else if (currentLevel === 1) levelStartXp = 10;
+    else if (currentLevel === 2) levelStartXp = 100;
+    else if (currentLevel === 3) levelStartXp = 1000;
+    else if (currentLevel === 4) levelStartXp = 10000;
+    else levelStartXp = (currentLevel - 4) * 10000 + 10000;
+
+    const levelEndXp = getXpForNextLevel();
+    const progressInLevel = EXP.value - levelStartXp;
+    const totalLevelXp = levelEndXp - levelStartXp;
+    
+    return Math.min(1, Math.max(0, progressInLevel / totalLevelXp));
+  };
+
   // Function to increment EXP
   const incrementExp = (amount) => {
     EXP.value += amount;
@@ -51,6 +87,9 @@ export function useExp() {
     EXP,
     incrementExp,
     resetExp,
-    getLevel
+    getLevel,
+    getXpForNextLevel,
+    getXpNeededForNextLevel,
+    getCurrentLevelProgress
   };
 }

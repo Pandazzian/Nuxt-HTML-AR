@@ -53,6 +53,8 @@ const continueGame = () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal-content {
@@ -60,6 +62,17 @@ const continueGame = () => {
   padding: 20px;
   border-radius: 10px;
   text-align: center;
+  width: 100%;
+  max-width: 33.33vw;
+  min-width: 280px;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 100%;
+    width: calc(100% - 40px);
+  }
 }
 
 button {
