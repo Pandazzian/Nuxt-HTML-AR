@@ -16,7 +16,7 @@
                         src="@/assets/images/pixelateHeart.png"
                         alt="life"
                       />
-                      <h5 class="times-complete">{{ timesComplete }}</h5>
+                      <span class="times-complete">{{ timesComplete }}/{{ levels[id].timesToComplete }}</span>
                     </div>
                     <div class="header-right">
                       <button class="instructions-btn" @click="openSlides">{{ t('game.howToPlay') }}</button>
@@ -42,8 +42,11 @@
                       :key="'target' + index + 'key'"
                       :id="'target' + index"
                       class="target"
+                      :style="{ marginLeft: (tar.indent || 0) * 30 + 'px' }"
                     >
-                      {{ t('game.line') }}{{ index + 1 }}
+                      <span class="line-number">{{ index + 1 }}</span>
+                      <span v-if="timesComplete === 0" class="target-text">{{ tar.expect }}</span>
+                      <span v-else class="target-placeholder">____</span>
                     </div>
                   </div>
                 </div>
@@ -100,6 +103,9 @@
         :isVisible="showCongratulatoryModal"
         :message="t('game.congratulations')"
         :isCongratulatory="true"
+        :showProgress="showProgress"
+        :oldRank="rankBefore"
+        :newRank="rankAfter"
         @continue="levelComplete"
       />
     </Background>
@@ -114,8 +120,13 @@
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
   import { useI18n } from '@/composables/useI18n';
 
-  const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+  const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
   const { t, currentLanguage } = useI18n();
+  
+  // Track rank for animation
+  const rankBefore = ref(0);
+  const rankAfter = ref(0);
+  const showProgress = ref(false);
   const lives = ref(3); // Track lives
   const showModal = ref(false); // Control incorrect choice modal visibility
   const showGameOverModal = ref(false); // Control Game Over modal visibility
@@ -196,9 +207,9 @@
             { text: '</html>', role: 'Closes the HTML document.\nThis should be the last tag in the file.' },
         ],
         destinations: [
-            { expect: '<!DOCTYPE html>' },
-            { expect: '<html>' },
-            { expect: '</html>' },
+            { expect: '<!DOCTYPE html>', indent: 0 },
+            { expect: '<html>', indent: 0 },
+            { expect: '</html>', indent: 0 },
         ],
     },
     {
@@ -216,13 +227,13 @@
             { text: '</body>', role: 'Closes the <body> section.\nThis should be placed just before </html>.' },
         ],
         destinations: [
-            { expect: '<!DOCTYPE html>' },
-            { expect: '<html>' },
-            { expect: '<head>' },
-            { expect: '</head>' },
-            { expect: '<body>' },
-            { expect: '</body>' },
-            { expect: '</html>' },
+            { expect: '<!DOCTYPE html>', indent: 0 },
+            { expect: '<html>', indent: 0 },
+            { expect: '<head>', indent: 1 },
+            { expect: '</head>', indent: 1 },
+            { expect: '<body>', indent: 1 },
+            { expect: '</body>', indent: 1 },
+            { expect: '</html>', indent: 0 },
         ],
     },
     {
@@ -238,11 +249,11 @@
             { text: '<link rel="stylesheet" href="styles.css">', role: 'Links an external CSS file to the document.\nShould be placed inside <head>.' },
         ],
         destinations: [
-            { expect: '<title>' },
-            { expect: '</title>' },
-            { expect: '<meta charset="UTF-8">' },
-            { expect: '<meta name="viewport" content="width=device-width, initial-scale=1.0">' },
-            { expect: '<link rel="stylesheet" href="styles.css">' },
+            { expect: '<title>', indent: 2 },
+            { expect: '</title>', indent: 2 },
+            { expect: '<meta charset="UTF-8">', indent: 2 },
+            { expect: '<meta name="viewport" content="width=device-width, initial-scale=1.0">', indent: 2 },
+            { expect: '<link rel="stylesheet" href="styles.css">', indent: 2 },
         ],
     },
     {
@@ -260,13 +271,13 @@
             { text: '</a>', role: 'Closes the <a> element.\nMust be placed immediately after its content.' },
         ],
         destinations: [
-            { expect: '<h1>' },
-            { expect: '</h1>' },
-            { expect: '<p>' },
-            { expect: '</p>' },
-            { expect: '<img src="image.jpg" alt="A sample image">' },
-            { expect: '<a href="https://example.com">' },
-            { expect: '</a>' },
+            { expect: '<h1>', indent: 2 },
+            { expect: '</h1>', indent: 2 },
+            { expect: '<p>', indent: 2 },
+            { expect: '</p>', indent: 2 },
+            { expect: '<img src="image.jpg" alt="A sample image">', indent: 2 },
+            { expect: '<a href="https://example.com">', indent: 2 },
+            { expect: '</a>', indent: 2 },
         ],
     },
     {
@@ -281,10 +292,10 @@
             { text: '<a href="https://example.com" target="_blank">', role: 'Opens the link in a new tab using the target attribute.\nShould be placed inside <body>.' },
         ],
         destinations: [
-            { expect: '<h1 class="main-title">' },
-            { expect: '<p id="intro">' },
-            { expect: '<img src="image.jpg" alt="A sample image" style="width:100px;">' },
-            { expect: '<a href="https://example.com" target="_blank">' },
+            { expect: '<h1 class="main-title">', indent: 2 },
+            { expect: '<p id="intro">', indent: 2 },
+            { expect: '<img src="image.jpg" alt="A sample image" style="width:100px;">', indent: 2 },
+            { expect: '<a href="https://example.com" target="_blank">', indent: 2 },
         ],
     }
 ];
@@ -362,8 +373,23 @@
           continueGame()
         }
         if(timesComplete.value == levels[id].timesToComplete){
+          // Store the rank before incrementing EXP
+          rankBefore.value = getLevel();
+          // Update EXP before showing the score
           incrementExp(levels[id].EXPonComplete);
-          showCongratulatoryModal.value = true; // Show congratulatory modal
+          // Get the new rank after incrementing EXP
+          rankAfter.value = getLevel();
+          // Set progress flag if rank improved
+          if (rankAfter.value > rankBefore.value) {
+            showProgress.value = true;
+            animateRankUp(rankBefore.value, rankAfter.value);
+          } else {
+            showProgress.value = false;
+          }
+          // Delay showing modal slightly to allow EXP reactive update
+          setTimeout(() => {
+            showCongratulatoryModal.value = true; // Show congratulatory modal
+          }, 100);
         }
   
         if (!snapMade) {
@@ -446,6 +472,26 @@
       box.targetAttachedTo = undefined;
     });
   };
+
+  // Function to animate rank moving up
+  const animateRankUp = (oldRank, newRank) => {
+    // Create a temporary element to show the rank animation
+    const rankElement = document.createElement('div');
+    rankElement.className = 'rank-animation';
+    rankElement.textContent = `LEVEL UP! ${oldRank} → ${newRank}`;
+    document.body.appendChild(rankElement);
+    
+    // Animate the element moving up and fading out
+    gsap.to(rankElement, {
+      y: -100,
+      opacity: 0,
+      duration: 1.5,
+      ease: 'power2.out',
+      onComplete: () => {
+        rankElement.remove();
+      }
+    });
+  };
   </script>
   
 
@@ -464,6 +510,13 @@ body{
 .header-left { display:flex; align-items:center; gap:8px; }
 .header-right { display:flex; align-items:center; gap:8px; }
 
+.times-complete {
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 12px;
+}
+
 .instructions-btn {
   background:#007bff;
   color:white;
@@ -479,25 +532,31 @@ body{
     text-align: center;
     width: 100%;
     max-width: 150px;
-    height: 50px;
-    line-height: 50px;
+    height: auto;
+    min-height: 50px;
+    padding: 8px;
     color: black;
     position: relative;
     border-radius: 10px;
     cursor: grab;
     margin-bottom: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 8px;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     box-sizing: border-box;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .target {
     background-color: #CCC;
-    text-align: center;
+    text-align: left;
     width: 100%;
-    max-width: 150px;
+    max-width: 200px;
     height: 50px;
     line-height: 50px;
     color: black;
@@ -505,6 +564,34 @@ body{
     border-radius: 10px;
     border: 2px dashed #007bff;
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease;
+}
+
+.line-number {
+    min-width: 30px;
+    margin-right: 8px;
+    color: #666;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.target-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+}
+
+.target-placeholder {
+    color: #999;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
 
 .tooltip-box {
@@ -601,5 +688,37 @@ body{
   .slide-modal { padding:12px; }
   .slide-body { font-size:14px; }
   .box, .target { max-width: 120px; height:44px; line-height:44px; }
+}
+
+/* rank animation styles */
+.rank-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);
+  pointer-events: none;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 16px 32px;
+  border-radius: 8px;
+  white-space: nowrap;
+  animation: pulse 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translateX(-50%) scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.1);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
 }
 </style>

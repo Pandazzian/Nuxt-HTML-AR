@@ -48,6 +48,16 @@
 
 // utils/leaderboard.js
 import seedrandom from 'seedrandom';
+import avatarImage from '@/assets/images/avatar.jpg';
+import avatarImage1 from '@/assets/images/Avatar1.png';
+
+// Avatar array for seeded selection
+const avatarOptions = [avatarImage, avatarImage1];
+
+// Function to generate random avatar using seeded RNG
+const generateAvatar = (rng) => {
+  return avatarOptions[Math.floor(rng() * avatarOptions.length)];
+};
 
 // Function to generate random names
 const generateName = (rng) => {
@@ -82,6 +92,7 @@ export const generateLeaderboard = (seed, currentUser = null) => {
         name: currentUser.name,
         country: currentUser.country,
         exp: currentUser.exp,
+        avatar: currentUser.avatar,
         isCurrentUser: true
       });
     } else {
@@ -89,6 +100,7 @@ export const generateLeaderboard = (seed, currentUser = null) => {
         name: generateName(rng),
         country: generateCountry(rng),
         exp: generateExp(rng),
+        avatar: generateAvatar(rng),
         isCurrentUser: false
       });
     }

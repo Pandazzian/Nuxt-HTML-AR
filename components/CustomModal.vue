@@ -126,18 +126,10 @@ import { gsap } from 'gsap';
 import Leaderboard from '~/components/Leaderboard.vue';
 import { useExp } from '@/composables/useEXP';
 import { useI18n } from '@/composables/useI18n';
+import { generateLeaderboard } from '@/utils/leaderboard';
 
 const { EXP } = useExp();
 const { t } = useI18n();
-const leaderboard = ref([]);
-
-onMounted(() => {
-  leaderboard.value = generateLeaderboard('my-seed-123', {
-    name: "User5489",
-    country: "Thailand",
-    exp: EXP.value
-  });
-});
 
 const props = defineProps({
   isVisible: Boolean,
@@ -167,6 +159,39 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'retry', 'quit', 'continue']);
+
+const leaderboard = ref([]);
+
+const updateLeaderboard = () => {
+  leaderboard.value = generateLeaderboard('my-seed-123', {
+    name: "User5489",
+    country: "Thailand",
+    exp: EXP.value
+  });
+};
+
+onMounted(() => {
+  updateLeaderboard();
+});
+
+// Watch isVisible to update leaderboard when modal shows
+watch(() => props.isVisible, (newVal) => {
+  if (newVal && props.isCongratulatory) {
+    updateLeaderboard();
+  }
+});
+
+// Watch isCongratulatory to update leaderboard when it becomes true
+watch(() => props.isCongratulatory, (newVal) => {
+  if (newVal && props.isVisible) {
+    updateLeaderboard();
+  }
+});
+
+// Watch EXP for changes
+watch(() => EXP.value, () => {
+  updateLeaderboard();
+});
 
 const highlightRank = ref(false);
 const progress = ref(0);

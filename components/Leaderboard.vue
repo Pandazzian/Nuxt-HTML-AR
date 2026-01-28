@@ -5,6 +5,7 @@
         <thead>
           <tr>
             <th>Place</th>
+            <th>Avatar</th>
             <th>Name</th>
             <th>Country</th>
             <th>EXP</th>
@@ -17,6 +18,9 @@
             :class="{ 'current-user': entry.isCurrentUser }"
           >
             <td>{{ entry.place }}</td>
+            <td class="avatar-cell">
+              <img :src="entry.avatar" :alt="entry.name" class="leaderboard-avatar" />
+            </td>
             <td>
               {{ entry.name }}
               <span v-if="entry.isCurrentUser" class="user-badge">(You)</span>
@@ -177,5 +181,23 @@
     button {
         padding: 5px 10px;
         cursor: pointer;
+    }
+
+    .avatar-cell {
+        display: flex;
+        justify-content: center;
+        padding: 5px;
+    }
+
+    .leaderboard-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .current-user .leaderboard-avatar {
+        border-color: #1890ff;
     }
 </style>

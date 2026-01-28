@@ -134,7 +134,7 @@ const translations = {
     },
     // Index page
     index: {
-      title: 'ยกระดับทักษะเว็บแนว!',
+      title: 'ยกระดับทักษะHTML!',
       startButton: 'เริ่มเรียน',
       resetExp: 'รีเซ็ต EXP',
     },
