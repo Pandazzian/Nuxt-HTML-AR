@@ -349,6 +349,13 @@
               lives.value -= 1; // Reduce lives
               modalMessage.value = choice.role; // Set modal message
               showModal.value = true; // Show incorrect choice modal
+              // Return box to original position
+              gsap.to(e.target, {
+                duration: 0.3,
+                x: 0,
+                y: 0,
+              });
+              return; // Don't snap to target
             }
   
             if (!target.classList.contains('occupied')) {

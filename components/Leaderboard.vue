@@ -32,7 +32,11 @@
       </table>
       <div class="pagination" v-if="showPagination">
         <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
-        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <div class="page-info">
+          <span>Page</span>
+          <input v-model.number="currentPage" type="number" :min="1" :max="totalPages" class="page-input" />
+          <span>of {{ totalPages }}</span>
+        </div>
         <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
       </div>
     </div>
@@ -175,7 +179,22 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
+    }
+
+    .page-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-input {
+        width: 60px;
+        padding: 5px;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
     }
 
     button {
