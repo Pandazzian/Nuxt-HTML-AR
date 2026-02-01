@@ -16,9 +16,11 @@
                         src="@/assets/images/pixelateHeart.png"
                         alt="life"
                       />
-                      <span class="times-complete">{{ timesComplete }}/{{ levels[id].timesToComplete }}</span>
+                      <span v-if="!isEndless" class="times-complete">{{ timesComplete }}/{{ activeLevel.timesToComplete }}</span>
+                      <span v-else class="times-complete">{{ t('game.round') }} {{ currentRound }}</span>
                     </div>
                     <div class="header-right">
+                      <span v-if="isEndless" class="endless-badge">{{ t('game.endlessMode') }}</span>
                       <button class="instructions-btn" @click="openSlides">{{ t('game.howToPlay') }}</button>
                     </div>
                   </div>
@@ -28,7 +30,7 @@
                   <div class="col-4 source">
                     <h3 style="color: aliceblue">{{ t('game.source') }}</h3>
                     <div
-                      v-for="(choice, index) in levels[id].choices"
+                      v-for="(choice, index) in activeLevel.choices"
                       :key="'choice' + index"
                       :class="'box dragger' + (index + 1)"
                     >
@@ -38,14 +40,14 @@
                   <div class="col-7 destination">
                     <h3 style="color: aliceblue">{{ t('game.htmlFile') }}</h3>
                     <div
-                      v-for="(tar, index) in levels[id].destinations"
+                      v-for="(tar, index) in activeLevel.destinations"
                       :key="'target' + index + 'key'"
                       :id="'target' + index"
                       class="target"
                       :style="{ marginLeft: (tar.indent || 0) * 30 + 'px' }"
                     >
                       <span class="line-number">{{ index + 1 }}</span>
-                      <span v-if="timesComplete === 0" class="target-text">{{ tar.expect }}</span>
+                      <span v-if="!isEndless && timesComplete === 0" class="target-text">{{ tar.expect }}</span>
                       <span v-else class="target-placeholder">____</span>
                     </div>
                   </div>
@@ -101,7 +103,7 @@
       <!-- Congratulatory Modal -->
       <Modal
         :isVisible="showCongratulatoryModal"
-        :message="t('game.congratulations')"
+        :message="congratsMessage"
         :isCongratulatory="true"
         :showProgress="showProgress"
         :oldRank="rankBefore"
@@ -112,15 +114,17 @@
   </template>
 
   <script setup>
-  import { ref, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch, computed, nextTick } from 'vue';
   import { gsap } from 'gsap';
   import { Draggable } from 'gsap/Draggable';
   import { useRoute, useRouter } from 'vue-router';
   import Modal from '@/components/CustomModal.vue';
   import { useExp } from '@/composables/useEXP'; // Import the useExp composable
+  import { useLeaderboard } from '@/composables/useLeaderboard';
   import { useI18n } from '@/composables/useI18n';
 
   const { EXP, incrementExp, resetExp, getLevel } = useExp(); // Use the composable
+  const { submitScore } = useLeaderboard();
   const { t, currentLanguage } = useI18n();
   
   // Track rank for animation
@@ -133,6 +137,7 @@
   const showCongratulatoryModal = ref(false); // Control congratulatory modal visibility
   const modalMessage = ref(''); // Store modal message
   const timesComplete = ref(0); // Track how many times the level is completed
+  const draggableInstances = ref([]);
 
   // Slides modal state
   const showSlidesModal = ref(true); // show before game start
@@ -172,17 +177,30 @@
 
   // Set slides based on current level
   const route = useRoute();
-  const id = route.params.id;
+  const levelId = computed(() => route.params.id);
+  const isEndless = computed(() => levelId.value === 'endless');
   
   // Watch for language changes
+  const currentEndlessLevelIndex = ref(0);
+  const endlessRounds = ref(0);
+  const lastEndlessReward = ref(0);
+  const currentRound = computed(() => endlessRounds.value + 1);
+
+  const getTutorialIndex = () => {
+    if (isEndless.value) return currentEndlessLevelIndex.value;
+    const parsed = Number(levelId.value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   watch(currentLanguage, () => {
     const levelTutorials = getLevelTutorials();
-    slides.value = levelTutorials[id] || levelTutorials[0];
+    const tutorialIndex = getTutorialIndex();
+    slides.value = levelTutorials[tutorialIndex] || levelTutorials[0];
   });
   
   // Initialize slides
   const levelTutorials = getLevelTutorials();
-  slides.value = levelTutorials[id] || levelTutorials[0];
+  slides.value = levelTutorials[getTutorialIndex()] || levelTutorials[0];
 
   const openSlides = () => { showSlidesModal.value = true; currentSlide.value = 0; };
   const closeSlides = () => { showSlidesModal.value = false; };
@@ -195,7 +213,7 @@
     if (currentSlide.value > 0) currentSlide.value--;
   };
 
-  const levels = [
+  const baseLevels = [
     {
         level: 0,
         EXPonComplete: 10,
@@ -301,6 +319,19 @@
 ];
 
   const router = useRouter();
+  const activeLevel = computed(() => {
+    if (isEndless.value) {
+      return baseLevels[currentEndlessLevelIndex.value] || baseLevels[0];
+    }
+    const parsed = Number(levelId.value);
+    return baseLevels[Number.isNaN(parsed) ? 0 : parsed] || baseLevels[0];
+  });
+  const congratsMessage = computed(() => {
+    if (!isEndless.value) return t('game.congratulations');
+    return t('game.endlessComplete')
+      .replace('{round}', String(endlessRounds.value))
+      .replace('{reward}', String(lastEndlessReward.value));
+  });
   
   // Watch lives for Game Over
   watch(lives, (newLives) => {
@@ -308,22 +339,30 @@
       showGameOverModal.value = true; // Show Game Over modal
     }
   });
+
+  watch(EXP, (newExp) => {
+    if (process.client) {
+      submitScore(newExp);
+    }
+  }, { immediate: true });
   
   // Register Plugins
   gsap.registerPlugin(Draggable);
   
-  onMounted(() => {
+  const initDraggables = () => {
     const targets = document.querySelectorAll('.target');
     const overlapThreshold = '50%';
-  
-    // Store original positions
+
+    draggableInstances.value.forEach((instance) => instance.kill());
+    draggableInstances.value = [];
+
     const boxes = document.querySelectorAll('.box');
     boxes.forEach((box) => {
       box.originalLeft = box.offsetLeft;
       box.originalTop = box.offsetTop;
     });
-  
-    Draggable.create('.box', {
+
+    const created = Draggable.create('.box', {
       bounds: '#demo',
       edgeResistance: 0.65,
       type: 'x,y',
@@ -342,9 +381,9 @@
         targets.forEach((target, targetIndex) => {
           if (this.hitTest(target, overlapThreshold)) {
             const choiceIndex = Array.from(boxes).indexOf(e.target);
-            const choice = levels[id].choices[choiceIndex];
-            const expected = levels[id].destinations[targetIndex].expect;
-  
+            const choice = activeLevel.value.choices[choiceIndex];
+            const expected = activeLevel.value.destinations[targetIndex].expect;
+
             if (choice.text !== expected) {
               lives.value -= 1; // Reduce lives
               modalMessage.value = choice.role; // Set modal message
@@ -357,7 +396,7 @@
               });
               return; // Don't snap to target
             }
-  
+
             if (!target.classList.contains('occupied')) {
               target.classList.add('occupied');
               gsap.to(e.target, {
@@ -373,17 +412,21 @@
             }
           }
         });
-  
+
         // Check if all targets are correctly occupied
         if (checkAllTargetsCorrect()) {
-          timesComplete.value += 1; // Increment timesComplete
-          continueGame()
+          if (isEndless.value) {
+            handleEndlessComplete();
+          } else {
+            timesComplete.value += 1; // Increment timesComplete
+            continueGame();
+          }
         }
-        if(timesComplete.value == levels[id].timesToComplete){
+        if(!isEndless.value && timesComplete.value == activeLevel.value.timesToComplete){
           // Store the rank before incrementing EXP
           rankBefore.value = getLevel();
           // Update EXP before showing the score
-          incrementExp(levels[id].EXPonComplete);
+          incrementExp(activeLevel.value.EXPonComplete);
           // Get the new rank after incrementing EXP
           rankAfter.value = getLevel();
           // Set progress flag if rank improved
@@ -393,12 +436,18 @@
           } else {
             showProgress.value = false;
           }
-          // Delay showing modal slightly to allow EXP reactive update
-          setTimeout(() => {
-            showCongratulatoryModal.value = true; // Show congratulatory modal
-          }, 100);
+          unlockEndlessIfNeeded();
+          // Submit latest EXP before showing modal
+          nextTick(() => {
+            Promise.resolve(submitScore(EXP.value)).finally(() => {
+            // Delay showing modal slightly to allow EXP reactive update
+            setTimeout(() => {
+              showCongratulatoryModal.value = true; // Show congratulatory modal
+            }, 100);
+            });
+          });
         }
-  
+
         if (!snapMade) {
           if (e.target.targetAttachedTo) {
             e.target.targetAttachedTo.classList.remove('occupied');
@@ -408,8 +457,17 @@
         }
       },
     });
+    draggableInstances.value = created || [];
+  };
+
+  onMounted(() => {
+    initDraggables();
   });
   const levelComplete = () => {
+    if (isEndless.value) {
+      continueGame();
+      return;
+    }
     quit();
   }
   // Function to check if all targets are correctly occupied
@@ -431,8 +489,8 @@
 
       // Find the choice corresponding to the attached box
       const choiceIndex = Array.from(document.querySelectorAll('.box')).indexOf(attachedBox);
-      const choice = levels[id].choices[choiceIndex];
-      const expected = levels[id].destinations[targetIndex].expect;
+      const choice = activeLevel.value.choices[choiceIndex];
+      const expected = activeLevel.value.destinations[targetIndex].expect;
 
       // Check if the choice matches the expected value
       if (choice.text !== expected) {
@@ -466,7 +524,11 @@
   
   const continueGame = () => {
     showCongratulatoryModal.value = false; // Close congratulatory modal
-    shuffleArray(levels[id].choices); // Shuffle choices
+    if (isEndless.value) {
+      prepareNextEndlessRound();
+      return;
+    }
+    shuffleArray(activeLevel.value.choices); // Shuffle choices
     resetDraggables(); // Reset draggables
   };
   
@@ -478,6 +540,75 @@
       box.targetAttachedTo?.classList.remove('occupied');
       box.targetAttachedTo = undefined;
     });
+  };
+
+  const pickRandomLevelIndex = (excludeIndex = null) => {
+    if (baseLevels.length <= 1) return 0;
+    let nextIndex = Math.floor(Math.random() * baseLevels.length);
+    while (excludeIndex !== null && nextIndex === excludeIndex) {
+      nextIndex = Math.floor(Math.random() * baseLevels.length);
+    }
+    return nextIndex;
+  };
+
+  const calculateEndlessReward = () => {
+    const baseReward = Math.max(5, Math.round(activeLevel.value.EXPonComplete * 0.25));
+    const bonus = Math.min(50, Math.floor(endlessRounds.value / 5) * 5);
+    return baseReward + bonus;
+  };
+
+  const handleEndlessComplete = () => {
+    timesComplete.value = 1;
+    endlessRounds.value += 1;
+    lastEndlessReward.value = calculateEndlessReward();
+    rankBefore.value = getLevel();
+    incrementExp(lastEndlessReward.value);
+    rankAfter.value = getLevel();
+    if (rankAfter.value > rankBefore.value) {
+      showProgress.value = true;
+      animateRankUp(rankBefore.value, rankAfter.value);
+    } else {
+      showProgress.value = false;
+    }
+    nextTick(() => {
+      Promise.resolve(submitScore(EXP.value)).finally(() => {
+        setTimeout(() => {
+          showCongratulatoryModal.value = true;
+        }, 100);
+      });
+    });
+  };
+
+  const prepareNextEndlessRound = () => {
+    timesComplete.value = 0;
+    lives.value = 3;
+    currentEndlessLevelIndex.value = pickRandomLevelIndex(currentEndlessLevelIndex.value);
+    shuffleArray(activeLevel.value.choices);
+    resetDraggables();
+    const levelTutorials = getLevelTutorials();
+    slides.value = levelTutorials[currentEndlessLevelIndex.value] || levelTutorials[0];
+    nextTick(() => {
+      initDraggables();
+    });
+  };
+
+  const markLevelCompleted = (levelIndex) => {
+    if (!process.client) return;
+    const stored = localStorage.getItem('completedLevels');
+    const completed = stored ? JSON.parse(stored) : [];
+    if (!completed.includes(levelIndex)) {
+      completed.push(levelIndex);
+    }
+    localStorage.setItem('completedLevels', JSON.stringify(completed));
+    if (completed.length >= baseLevels.length) {
+      localStorage.setItem('endlessUnlocked', 'true');
+    }
+  };
+
+  const unlockEndlessIfNeeded = () => {
+    const parsed = Number(levelId.value);
+    if (Number.isNaN(parsed)) return;
+    markLevelCompleted(parsed);
   };
 
   // Function to animate rank moving up
@@ -499,6 +630,18 @@
       }
     });
   };
+
+  onMounted(() => {
+    if (isEndless.value) {
+      currentEndlessLevelIndex.value = pickRandomLevelIndex();
+      shuffleArray(activeLevel.value.choices);
+      const levelTutorials = getLevelTutorials();
+      slides.value = levelTutorials[currentEndlessLevelIndex.value] || levelTutorials[0];
+      nextTick(() => {
+        initDraggables();
+      });
+    }
+  });
   </script>
   
 
@@ -517,6 +660,16 @@ body{
 .header-left { display:flex; align-items:center; gap:8px; }
 .header-right { display:flex; align-items:center; gap:8px; }
 
+.endless-badge {
+  background: #ffd166;
+  color: #1a1a1a;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
 .times-complete {
   color: white;
   font-size: 16px;
@@ -533,6 +686,7 @@ body{
   cursor:pointer;
 }
 .instructions-btn:active { transform: translateY(1px); }
+
 
 .box {
     background-color: #91e600;

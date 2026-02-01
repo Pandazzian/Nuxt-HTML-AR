@@ -1,36 +1,42 @@
 // composables/useExp.js
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
+
+let isExpInitialized = false;
 
 export function useExp() {
-  // Initialize EXP with a default value for consistent SSR/hydration
-  const EXP = ref(0);
+  // Shared EXP state across app
+  const EXP = useState('EXP', () => 0);
 
   // Load EXP from localStorage only after component is mounted
   onMounted(() => {
-    if (process.client) {
+    if (process.client && !isExpInitialized) {
+      isExpInitialized = true;
       EXP.value = Number(localStorage.getItem('EXP')) || 0;
     }
   });
 
-  const getLevel=()=>{
+    const getLevel=()=>{
     let level = 0;
-    if(EXP.value>=10&&EXP.value<100){
-        level = 1;
+    if (EXP.value < 10) {
+      level = 0;
+    }
+    else if(EXP.value>=10&&EXP.value<100){
+      level = 1;
     }
     else if(EXP.value>=100&&EXP.value<1000){
-        level = 2;
+      level = 2;
     }
     else if(EXP.value>=1000&&EXP.value<10000){
-        level = 3;
+      level = 3;
     }
     else if(EXP.value>=10000&&EXP.value<20000){
-        level = 4;
+      level = 4;
     }
     else{
-        level = 3+parseInt(EXP.value/10000)
+      level = 3+parseInt(EXP.value/10000)
     }
     return level;
-  }
+    }
 
   // Function to get XP required for next level
   const getXpForNextLevel = () => {
@@ -80,6 +86,9 @@ export function useExp() {
     EXP.value = 0;
     if (process.client) {
       localStorage.setItem('EXP', EXP.value); // Save to localStorage
+      localStorage.removeItem('completedLevels');
+      localStorage.removeItem('endlessUnlocked');
+      localStorage.removeItem('lastAvatarUnlockExp');
     }
   };
 

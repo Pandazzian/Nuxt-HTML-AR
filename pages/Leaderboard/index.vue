@@ -3,6 +3,13 @@
     <Background>
       <div class="page-content">
         <ClientOnly>
+          <div class="leaderboard-header">
+            <div class="name-input">
+              <label for="leaderboard-name">Name</label>
+              <input id="leaderboard-name" v-model="nameInput" type="text" maxlength="24" placeholder="Enter your name" />
+              <button type="button" @click="saveName">Save</button>
+            </div>
+          </div>
           <Leaderboard 
             v-if="leaderboard"
             :leaderboard-data="leaderboard" 
@@ -16,52 +23,74 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { generateLeaderboard } from '@/utils/leaderboard';
+import { ref, onMounted, onUnmounted } from 'vue';
 import Background from '~/components/Background.vue';
 import Leaderboard from '~/components/Leaderboard.vue';
 import { useExp } from '@/composables/useEXP';
-import avatarImage from '@/assets/images/avatar.jpg';
-import avatarImage1 from '@/assets/images/Avatar1.png';
-import avatarImage2 from '@/assets/images/Avatar2.png';
-import avatarImage3 from '@/assets/images/Avatar3.png';
-import avatarImage4 from '@/assets/images/Avatar4.png';
-import avatarImage5 from '@/assets/images/Avatar5.png';
-import avatarImage6 from '@/assets/images/Avatar6.png';
-import avatarImage7 from '@/assets/images/Avatar7.png';
-import avatarImage8 from '@/assets/images/Avatar8.png';
-import avatarImage9 from '@/assets/images/Avatar9.png';
+import { useLeaderboard } from '@/composables/useLeaderboard';
 
 const { EXP } = useExp();
 const leaderboard = ref(null);
+const { userName, setUserName, fetchLeaderboard, submitScore } = useLeaderboard();
+const nameInput = ref('');
+let refreshTimer = null;
 
-// Avatar list matching Avatar.vue
-const allAvatars = [
-  { image: avatarImage },
-  { image: avatarImage1 },
-  { image: avatarImage2 },
-  { image: avatarImage3 },
-  { image: avatarImage4 },
-  { image: avatarImage5 },
-  { image: avatarImage6 },
-  { image: avatarImage7 },
-  { image: avatarImage8 },
-  { image: avatarImage9 },
-];
+const refreshLeaderboard = async () => {
+  await submitScore(EXP.value);
+  leaderboard.value = await fetchLeaderboard(200);
+};
 
-// Get current user's selected avatar
-const currentUserAvatar = computed(() => {
-  const savedAvatarIndex = localStorage.getItem('selectedAvatarIndex');
-  const avatarIndex = savedAvatarIndex ? parseInt(savedAvatarIndex, 10) : 0;
-  return allAvatars[avatarIndex]?.image || avatarImage;
-});
+const saveName = async () => {
+  setUserName(nameInput.value);
+  await refreshLeaderboard();
+};
 
 onMounted(() => {
-  leaderboard.value = generateLeaderboard('my-seed-123', {
-    name: "User5489",
-    country: "Thailand",
-    exp: EXP.value,
-    avatar: currentUserAvatar.value
-  });
+  nameInput.value = userName.value;
+  refreshLeaderboard();
+  refreshTimer = setInterval(refreshLeaderboard, 5000);
+});
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 });
 </script>
+
+<style scoped>
+.leaderboard-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.name-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.name-input label {
+  font-weight: 600;
+}
+
+.name-input input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.name-input button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #0f3460;
+  color: white;
+  cursor: pointer;
+}
+</style>

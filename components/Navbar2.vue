@@ -2,7 +2,10 @@
     <div class="card stick">
         <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
         <div class="container-fluid">
-            <NuxtLink class="navbar-brand" to="/">Start learning</NuxtLink>
+            <NuxtLink class="navbar-brand" to="/">
+              <span class="home-icon" aria-hidden="true">🏠</span>
+              <span>Home</span>
+            </NuxtLink>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -24,7 +27,7 @@
                     {{ currentLanguage.value === 'en' ? 'EN' : 'TH' }}
                   </button>
                 </li>
-                <h2>Level:{{ getLevel() }}</h2>
+                <h2>Level:{{ currentLevel }}</h2>
             </ul>
             </div>
         </div>
@@ -41,6 +44,7 @@
   const { t, setLanguage, currentLanguage } = useI18n();
   const langDisplay = computed(() => currentLanguage.value.toUpperCase());
   const isMounted = ref(false);
+  const currentLevel = computed(() => getLevel());
 
   const toggleLanguage = () => {
     setLanguage(currentLanguage.value === 'en' ? 'th' : 'en');
@@ -54,6 +58,13 @@
   <style scoped>
   .navbar-brand{
     color: #082557;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .home-icon {
+    font-size: 1rem;
+    line-height: 1;
   }
   .navbar {
       background-color: #F0EAE3;

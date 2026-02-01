@@ -32,6 +32,37 @@
               </div>
             </div>
           </div>
+          <div class="col-10">
+            <div class="card w-100 mt-2 mb-2 levels endless">
+              <div class="card-body">
+                <div class="card-text">
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-2">
+                        <h3 class="card-title white-text">{{ t('game.endlessMode') }}</h3>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-2">
+                        <img :src="endlessMode.image" :alt="endlessMode.name">
+                      </div>
+                      <div class="col-6" style="align-content: space-evenly;">
+                        <h4 class="white-text">{{ t('game.endlessMode') }}</h4>
+                      </div>
+                      <div class="col-4">
+                        <button v-if="!endlessUnlocked" type="button" class="btn btn-secondary btn-lg w-100" disabled>
+                          {{ t('game.endlessLocked') }}
+                        </button>
+                        <button v-else type="button" class="btn btn-info btn-lg w-100" style="color: white" @click="navigateToEndless">
+                          {{ t('common.play') }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -43,6 +74,7 @@ import level2 from '@/assets/images/level2.webp';
 import level3 from '@/assets/images/level3.webp';
 import level4 from '@/assets/images/level4.webp';
 import level5 from '@/assets/images/level5.webp';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useExp } from '@/composables/useEXP'; // Import the useExp composable
 import { useI18n } from '@/composables/useI18n';
@@ -50,6 +82,7 @@ import { useI18n } from '@/composables/useI18n';
 const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
 const { t } = useI18n();
 const router = useRouter();
+const endlessUnlocked = ref(false);
 const levels = [
   {
     level: 0,
@@ -87,8 +120,30 @@ const levels = [
     locked: true
   },
 ];
+const endlessMode = {
+  image: level5,
+};
+
+const loadEndlessUnlockState = () => {
+  if (!process.client) return;
+  const stored = localStorage.getItem('completedLevels');
+  const completed = stored ? JSON.parse(stored) : [];
+  endlessUnlocked.value = completed.length >= levels.length;
+};
+
+onMounted(() => {
+  loadEndlessUnlockState();
+});
+
+watch(EXP, () => {
+  loadEndlessUnlockState();
+});
+
 const navigateToLevel = (id) => {
   router.push(`/Levels/${id}`);
+};
+const navigateToEndless = () => {
+  router.push('/Levels/endless');
 };
 </script>
 <style>
@@ -107,5 +162,8 @@ img{
 }
 .btn{
   border-radius: 3rem;
+}
+.endless{
+  border: 2px dashed #3aa0ff;
 }
 </style>

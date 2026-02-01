@@ -1,6 +1,16 @@
 <template> 
     <Background>
         <div class="page-content" style="position: relative; z-index: 1;">
+          <div v-if="showNameModal" class="name-modal-overlay">
+            <div class="name-modal">
+              <h3>Welcome!</h3>
+              <p>Please enter your name to appear on the leaderboard.</p>
+              <div class="name-modal-input">
+                <input v-model="nameInput" type="text" maxlength="24" placeholder="Your name" />
+                <button type="button" @click="saveName">Save</button>
+              </div>
+            </div>
+          </div>
             <div class="container-fluid mt-5" style="align-self: baseline; ">
                 <div class="row justify-content-center">
                     <div class="col-11 col-md-10 col-lg-12">
@@ -28,9 +38,6 @@
                                     <div class="col-12 d-xl-none">
                                         <NuxtLink to="/Levels" class="start-button w-100">{{ t('index.startButton') }}</NuxtLink>
                                     </div>
-                                    <button class="col-12 btn-warning" @click="resetExp">
-                                        {{ t('index.resetExp') }}
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -56,81 +63,71 @@
 </template>
   
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import Background from '~/components/Background.vue';
 import Leaderboard from '~/components/Leaderboard.vue';
 import { useExp } from '@/composables/useEXP'; // Import the useExp composable
 import { useI18n } from '~/composables/useI18n';
-import { generateLeaderboard } from '~/utils/leaderboard';
-import avatarImage from '@/assets/images/avatar.jpg';
-import avatarImage1 from '@/assets/images/Avatar1.png';
-import avatarImage2 from '@/assets/images/Avatar2.png';
-import avatarImage3 from '@/assets/images/Avatar3.png';
-import avatarImage4 from '@/assets/images/Avatar4.png';
-import avatarImage5 from '@/assets/images/Avatar5.png';
-import avatarImage6 from '@/assets/images/Avatar6.png';
-import avatarImage7 from '@/assets/images/Avatar7.png';
-import avatarImage8 from '@/assets/images/Avatar8.png';
-import avatarImage9 from '@/assets/images/Avatar9.png';
+import { useLeaderboard } from '@/composables/useLeaderboard';
 
-const { EXP, incrementExp, resetExp } = useExp(); // Use the composable
+const { EXP, incrementExp, resetExp, getLevel, getXpForNextLevel, getCurrentLevelProgress } = useExp(); // Use the composable
 const { t } = useI18n();
 const leaderboardData = ref([]);
+const { userName, setUserName, fetchLeaderboard, submitScore } = useLeaderboard();
+const nameInput = ref('');
+const showNameModal = ref(false);
+let refreshTimer = null;
 
-// XP level thresholds
-const levelThresholds = [0, 10, 100, 1000, 10000, 20000];
+const currentLevel = computed(() => getLevel());
 
-const currentLevel = computed(() => {
-  for (let i = levelThresholds.length - 1; i >= 0; i--) {
-    if (EXP.value >= levelThresholds[i]) {
-      return i;
-    }
-  }
-  return 0;
+const levelStartXp = computed(() => {
+  const level = currentLevel.value;
+  if (level === 0) return 0;
+  if (level === 1) return 10;
+  if (level === 2) return 100;
+  if (level === 3) return 1000;
+  if (level === 4) return 10000;
+  return (level - 4) * 10000 + 10000;
 });
 
-const currentLevelXp = computed(() => {
-  return EXP.value - (levelThresholds[currentLevel.value] || 0);
-});
+const levelEndXp = computed(() => getXpForNextLevel());
 
-const nextLevelXp = computed(() => {
-  return (levelThresholds[currentLevel.value + 1] || levelThresholds[levelThresholds.length - 1]) - (levelThresholds[currentLevel.value] || 0);
-});
+const currentLevelXp = computed(() => Math.max(0, EXP.value - levelStartXp.value));
+
+const nextLevelXp = computed(() => Math.max(1, levelEndXp.value - levelStartXp.value));
 
 const xpProgress = computed(() => {
-  return currentLevelXp.value / nextLevelXp.value;
+  const progress = getCurrentLevelProgress();
+  return Number.isFinite(progress) ? progress : 0;
 });
 
-// Avatar list matching Avatar.vue
-const allAvatars = [
-  { image: avatarImage },
-  { image: avatarImage1 },
-  { image: avatarImage2 },
-  { image: avatarImage3 },
-  { image: avatarImage4 },
-  { image: avatarImage5 },
-  { image: avatarImage6 },
-  { image: avatarImage7 },
-  { image: avatarImage8 },
-  { image: avatarImage9 },
-];
+const refreshLeaderboard = async () => {
+  await submitScore(EXP.value);
+  leaderboardData.value = await fetchLeaderboard(10);
+};
 
-// Get current user's selected avatar
-const currentUserAvatar = computed(() => {
-  const savedAvatarIndex = localStorage.getItem('selectedAvatarIndex');
-  const avatarIndex = savedAvatarIndex ? parseInt(savedAvatarIndex, 10) : 0;
-  return allAvatars[avatarIndex]?.image || avatarImage;
-});
+const saveName = async () => {
+  setUserName(nameInput.value);
+  showNameModal.value = false;
+  await refreshLeaderboard();
+};
 
 onMounted(() => {
-  // Generate leaderboard with current user's EXP
-  leaderboardData.value = generateLeaderboard('seeded-leaderboard', {
-    name: 'You',
-    country: 'Your Country',
-    exp: EXP.value,
-    level: currentLevel.value,
-    avatar: currentUserAvatar.value
-  });
+  nameInput.value = userName.value;
+  showNameModal.value = !userName.value;
+  refreshLeaderboard();
+  refreshTimer = setInterval(refreshLeaderboard, 8000);
+});
+
+watch(EXP, () => {
+  refreshLeaderboard();
+});
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 });
 </script>
   
@@ -189,9 +186,6 @@ onMounted(() => {
   text-align: center;
 }
 
-button.btn-warning {
-  display: none;
-}
 
 .leaderboard-section {
   background: #CDC9C5;
@@ -224,6 +218,58 @@ button.btn-warning {
 
 .view-all-button:hover {
   background: #357abd;
+}
+
+.name-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.name-modal {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  width: min(420px, 90vw);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.name-modal h3 {
+  margin-bottom: 8px;
+  color: #082557;
+}
+
+.name-modal p {
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.name-modal-input {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.name-modal-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.name-modal-input button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #0f3460;
+  color: white;
+  cursor: pointer;
 }
 
 </style>
